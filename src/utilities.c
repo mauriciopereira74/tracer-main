@@ -43,3 +43,17 @@ ssize_t read_line(int fd, char* line, size_t size)
     lseek(fd, line_length - bytes_read, SEEK_CUR);
     return line_length;
 }
+
+/**
+ * @brief Helper function to print out error messages using the 'write' function.
+ * 
+ * @param content String to print.
+ */
+void print_error(char *content)
+{
+    char* temp = malloc(sizeof(char) * (strlen(content) + 8));
+    sprintf(temp, "[!] %s", content);
+    
+    write(STDERR_FILENO, temp, strlen(temp));
+    free(temp);
+}

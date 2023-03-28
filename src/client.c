@@ -8,6 +8,10 @@
 #include <sys/stat.h>
 
 #include "../includes/client.h"
+#include "../includes/execute.h"
+#include "../includes/utilities.h"
+#include "../includes/commands.h"
+
 
 #define OPEN_ERROR   4
 
@@ -18,18 +22,33 @@ int main(int argc, char *argv[]) {
     ./tracer execute -u "prog-a arg-1 (...) arg-n"
     */
 
-    /* Abrir comunicacao com o servidor. */
-    int client_to_server = open("tmp/cts", O_WRONLY);
-    if (client_to_server < 0)
-    {
-        print_error("Failed to open client to server pipe (client).\n");
-        return OPEN_ERROR;
-    }
+   // não fornecer comandos
+   if(argc<2){
+    print_error("INPUT INVALIDO\n"); 
+    return 0;
+   }
+   // fornece execute mas nao fornece comando
+   else if(argc<3 && strcmp(argv[1], "execute") == 0){
+    print_error("Esqueceu de fornecer a flag e o comando que deseja executar\n");
+    return 0; 
+   }
+   else if(argc<=3 && strcmp(argv[1], "execute") == 0){
+    print_error("Esqueceu de fornecer a flag\n");
+    return 0;
+   }
 
-    /* Criacao do pipe entre servidor e cliente. */
-    pid_t client_id = getpid();
-
-    
-
+    // execute de apenas um comando 
+   if(argc>=3 && strcmp(argv[1], "execute") == 0 && strcmp(argv[2], "-u") == 0 ){
+    Command cmd= initCmd(argv[3]);
+    execute(cmd);
+   }
+    /*
+     ./tracer execute -p "prog-a arg-1 (...) arg-n | 
+                        prog-b arg-1 (...) arg-n | prog-c arg-1 (...) arg-n"
+    */
+   // execute de mais de um comando
+   else if(argc>=3 && strcmp(argv[1], "execute") == 0 && strcmp(argv[2], "-p") == 0 ){
+    print_error("DOING....\n");
+   }
 
 }
