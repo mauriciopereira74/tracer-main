@@ -15,10 +15,20 @@ void execute(Command c){
     if(fork()==0){
 
     pid_t pid= getpid();
+
     printf("Running PID %d\n",pid);
-    start=clock();
-    execlp(c.cmd,c.cmd,NULL);
-    end=clock();
+
+    if(c.args_size>0){
+        start=clock();
+        execvp(c.cmd,c.args);
+        end=clock();
+
+    }
+    else{
+        start=clock();
+        execlp(c.cmd,c.cmd,NULL);
+        end=clock();
+    }
 
     _exit(5);
     

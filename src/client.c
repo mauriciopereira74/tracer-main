@@ -37,9 +37,23 @@ int main(int argc, char *argv[]) {
     return 0;
    }
 
-    // execute de apenas um comando 
+    // execute de apenas um comando com ou sem argumentos
    if(argc>=3 && strcmp(argv[1], "execute") == 0 && strcmp(argv[2], "-u") == 0 ){
-    Command cmd= initCmd(argv[3]);
+    
+    Command cmd;
+    int args_size= argc-4;
+    char **args=xmalloc(sizeof(char *) * args_size);
+
+    if(args_size>0){
+        args[0]= argv[3];
+        for(int j=1;j<=args_size;j++){
+                args[j]= argv[j+3];
+        }
+        cmd=initPipe(argv[3],args,args_size);
+    }
+    else {
+    cmd= initCmd(argv[3]);
+    }
     execute(cmd);
    }
     /*
