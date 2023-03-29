@@ -12,5 +12,6 @@ Command initPipe(char *cmd, char *args[], int size){
 Command initCmd(char *cmd){
     Command c;
     c.cmd=cmd;
+    c.args_size=0;
     return c;
 }

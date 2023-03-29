@@ -18,6 +18,7 @@ void execute(Command c){
 
     printf("Running PID %d\n",pid);
 
+
     if(c.args_size>0){
         start=clock();
         execvp(c.cmd,c.args);
