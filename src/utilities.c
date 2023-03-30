@@ -23,28 +23,6 @@ void *xmalloc(size_t size)
 }
 
 /**
- * @brief Makes use of the 'write' function to read a line from a given file descriptor, 
- * because we really are masochists.
- * 
- * @param fd File (aka. file descriptor (integer)).
- * @param line Output parameter containing the read line.
- * @param size Expected size of the line.
- * @return Number of read bytes. 
- */
-ssize_t read_line(int fd, char* line, size_t size)
-{
-    ssize_t bytes_read = read(fd, line, size);
-    if (!bytes_read) return 0;
-
-    size_t line_length = strcspn(line, "\n") + 1;
-    if (bytes_read < (ssize_t)line_length) line_length = bytes_read;
-    line[line_length] = 0;
-    
-    lseek(fd, line_length - bytes_read, SEEK_CUR);
-    return line_length;
-}
-
-/**
  * @brief Helper function to print out error messages using the 'write' function.
  * 
  * @param content String to print.
