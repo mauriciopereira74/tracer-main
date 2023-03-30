@@ -2,7 +2,7 @@
 CC = gcc
 
 # Flags de compilação
-CFLAGS   = -std=gnu99 -Wall -Wextra -O2 -Wunreachable-code -g
+CFLAGS   = -std=gnu99 -Wall -Wextra -O3
 
 # Flags de linking
 LDFLAGS_C = -lm
@@ -27,8 +27,9 @@ NAME_C = tracer
 NAME_S   = monitor
 NAME_S_S = monitor
 
+
 # Tudo
-all: $(NAME) $(NAME_S)
+all: $(NAME) #$(NAME_S)
 
 # Cliente
 $(NAME): $(BIN_DIR)/$(NAME)

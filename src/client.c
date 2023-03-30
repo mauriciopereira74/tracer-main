@@ -15,7 +15,8 @@
 
 #define OPEN_ERROR   4
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 
     /*
     Exemplo de input:
