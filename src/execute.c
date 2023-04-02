@@ -5,38 +5,50 @@
 #include <stdlib.h>
 #include <time.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 
 #include "../includes/commands.h"
 
 void execute(Command c){
 
-    clock_t start, end;
+    struct timeval start, end;
 
     if(fork()==0){
 
-    pid_t pid= getpid();
-
-    printf("Running PID %d\n",pid);
-
+    printf("Running PID %d\n",getpid());
 
     if(c.args_size>0){
-        start=clock();
+        gettimeofday(&start, NULL);
         execvp(c.cmd,c.args);
-        end=clock();
 
     }
     else{
-        start=clock();
+        gettimeofday(&start, NULL);
         execlp(c.cmd,c.cmd,NULL);
-        end=clock();
     }
 
-    _exit(5);
+
+    perror("exec error");
+    _exit(1);   
     
     }
-    wait(NULL);
-    double time = ((double) (end - start)) / CLOCKS_PER_SEC * 1000;
-    unsigned long time_d = (unsigned long) time;
-    printf("Ended in %lu ms\n",time_d);
+    // wait for child process to finish
+    int status;
+    wait(&status);
+    gettimeofday(&end, NULL);
+
+    if (WIFEXITED(status)) {
+
+        if (WEXITSTATUS(status) == 0) {
+            double time = (end.tv_sec - start.tv_sec) * 1000.0 + (end.tv_usec - start.tv_usec) / 1000.0;
+            unsigned long time_d = (unsigned long) time;
+            printf("Ended in %lu ms\n", time_d);
+
+        } else {
+            printf("Child process exited with status %d\n", WEXITSTATUS(status));
+        }
+    } else {
+        printf("Child process terminated abnormally\n");
+    }
 
 }
