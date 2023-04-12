@@ -29,7 +29,7 @@ NAME_S_S = monitor
 
 
 # Tudo
-all: $(NAME) #$(NAME_S)
+all: $(NAME) $(NAME_S)
 
 # Cliente
 $(NAME): $(BIN_DIR)/$(NAME)

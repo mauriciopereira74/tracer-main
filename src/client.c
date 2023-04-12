@@ -13,10 +13,16 @@
 #include "../includes/commands.h"
 
 
-#define OPEN_ERROR   4
-
 int main(int argc, char *argv[])
 {
+    
+    /* Opening communication with the server. */ 
+    int client_to_server = open("tmp/fifo", O_WRONLY);
+    if (client_to_server < 0)
+    {
+        print_error("Failed to open client to server pipe (client).\n");
+        return OPEN_ERROR;
+    }
 
     /*
     Exemplo de input:
@@ -32,6 +38,10 @@ int main(int argc, char *argv[])
             if(strcmp(argv[1], "execute") == 0) {
                 print_error("Esqueceu de fornecer a flag e o comando que deseja executar\n");
                 return 0;
+            }
+            else if(strcmp(argv[1], "status") == 0){
+                /// pegar na informação do servidor
+                printf("coming....\n");
             }
             break;
         case 3:
@@ -63,6 +73,7 @@ int main(int argc, char *argv[])
                     else {
                     cmd = initCmd(argv[3]);
                     }
+                    
                     execute(cmd);
                 }
                 /*
