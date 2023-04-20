@@ -9,5 +9,9 @@
 #define PIPE_ERROR   8
 #define EXEC_ERROR   9
 
+
+#include "../includes/responses.h"
+
 void *xmalloc(size_t size);
 void print_error(char *content);
+Response initRes(int pid, char *cmd, struct timeval start);

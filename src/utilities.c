@@ -8,7 +8,12 @@
 #include <time.h>
 #include <sys/time.h>
 
+#include "../includes/client.h"
+#include "../includes/execute.h"
 #include "../includes/utilities.h"
+#include "../includes/commands.h"
+#include "../includes/responses.h"
+#include "../includes/requests.h"
 
 
 void *xmalloc(size_t size)
@@ -34,4 +39,12 @@ void print_error(char *content)
     
     write(STDERR_FILENO, temp, strlen(temp));
     free(temp);
+}
+
+Response initRes(int pid, char *cmd, struct timeval start){
+    Response r;
+    r.pid=pid;
+    r.cmd=cmd;
+    r.start=start;
+    return r;
 }

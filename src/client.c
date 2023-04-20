@@ -6,11 +6,14 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 
 #include "../includes/client.h"
 #include "../includes/execute.h"
 #include "../includes/utilities.h"
 #include "../includes/commands.h"
+#include "../includes/responses.h"
+#include "../includes/requests.h"
 
 
 int main(int argc, char *argv[])
@@ -20,7 +23,7 @@ int main(int argc, char *argv[])
     int client_to_server = open("tmp/fifo", O_WRONLY);
     if (client_to_server < 0)
     {
-        print_error("Failed to open client to server pipe (client).\n");
+        print_error("Failed to open fifo (client).\n");
         return OPEN_ERROR;
     }
 
@@ -56,6 +59,8 @@ int main(int argc, char *argv[])
             if(strcmp(argv[1], "execute") == 0){
                 if(strcmp(argv[2], "-u") == 0){
 
+                    struct timeval start,end;
+
                     Command cmd;
 
                     int args_size = argc - 4;
@@ -72,9 +77,24 @@ int main(int argc, char *argv[])
                     }
                     else {
                     cmd = initCmd(argv[3]);
-                    }
-                    
+                    } 
+                    gettimeofday(&start, NULL);
                     execute(cmd);
+                    gettimeofday(&end, NULL);
+
+                    Response response= initRes(getpid(),cmd.cmd,start);
+
+                    if (write(client_to_server, &response, sizeof(struct response)) < 0)
+                    {
+                        print_error("Failed to write to client to server fifo.\n");
+                        return WRITE_ERROR;
+                    }
+
+                    double time = (end.tv_sec - start.tv_sec) * 1000.0 + (end.tv_usec - start.tv_usec) / 1000.0;
+                    unsigned long time_d = (unsigned long) time;
+                    printf("Ended in %lu ms\n", time_d);
+
+                    close(client_to_server);
                 }
                 /*
                 ./tracer execute -p "prog-a arg-1 (...) arg-n | 
