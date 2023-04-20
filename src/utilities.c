@@ -13,8 +13,6 @@
 #include "../includes/utilities.h"
 #include "../includes/commands.h"
 #include "../includes/responses.h"
-#include "../includes/requests.h"
-
 
 void *xmalloc(size_t size)
 {

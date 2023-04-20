@@ -12,8 +12,6 @@
 #include "../includes/server.h"
 #include "../includes/utilities.h"
 #include "../includes/responses.h"
-#include "../includes/requests.h"
-
 int main(){
 
     /* Opening communication with the client. */
