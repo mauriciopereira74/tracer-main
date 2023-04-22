@@ -9,19 +9,20 @@
 
 #include "../includes/commands.h"
 
-void execute(Command c){
+pid_t execute(Command *c){
 
+    pid_t pid;
 
-    if(fork()==0){
+    if(((pid=fork())==0)){
 
     printf("Running PID %d\n",getpid());
 
-    if(c.args_size>0){
-        execvp(c.cmd,c.args);
+    if(c->args_size>0){
+        execvp(c->cmd,c->args);
 
     }
     else{
-        execlp(c.cmd,c.cmd,NULL);
+        execlp(c->cmd,c->cmd,NULL);
     }
 
 
@@ -43,5 +44,7 @@ void execute(Command c){
     } else {
         printf("Child process terminated abnormally\n");
     }
+
+    return pid;
 
 }

@@ -11,7 +11,11 @@
 
 
 #include "../includes/responses.h"
+#include "../includes/commands.h"
+#include <sys/time.h>
 
 void *xmalloc(size_t size);
 void print_error(char *content);
-Response initRes(int pid, char *cmd, struct timeval start);
+Response *initRes(int pid, char cmd[10], struct timeval start);
+unsigned long getTime(struct timeval start,struct timeval end);
+//char* concat_args(pid_t pid, const char* cmd, struct timeval start);

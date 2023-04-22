@@ -32,17 +32,30 @@ void *xmalloc(size_t size)
  */
 void print_error(char *content)
 {
-    char* temp = malloc(sizeof(char) * (strlen(content) + 8));
+    char* temp = xmalloc(sizeof(char) * (strlen(content) + 8));
     sprintf(temp, "[!] %s", content);
     
     write(STDERR_FILENO, temp, strlen(temp));
     free(temp);
 }
 
-Response initRes(int pid, char *cmd, struct timeval start){
-    Response r;
-    r.pid=pid;
-    r.cmd=cmd;
-    r.start=start;
+Response *initRes(int pid, char cmd[10], struct timeval start){
+    Response *r = xmalloc(sizeof(Response));
+    r->pid=pid;
+    strcpy(r->cmd,cmd);
+    r->start=start;
     return r;
 }
+
+unsigned long getTime(struct timeval start,struct timeval end){
+    double time = (end.tv_sec - start.tv_sec) * 1000.0 + (end.tv_usec - start.tv_usec) / 1000.0;
+    unsigned long time_d = (unsigned long) time;
+    return time_d;
+}
+/*
+char* concat_args(pid_t pid, const char* cmd, struct timeval start) {
+    char* buffer = malloc(128 * sizeof(char));
+    sprintf(buffer, "pid=%d cmd=%s start=%ld.%06ld", pid, cmd, start.tv_sec, start.tv_usec);
+    return buffer;
+}
+*/

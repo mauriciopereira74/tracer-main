@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 
                     struct timeval start,end;
 
-                    Command cmd;
+                    Command *cmd;
 
                     int args_size = argc - 4;
                     char **args = xmalloc(sizeof(char *) * args_size);
@@ -77,20 +77,18 @@ int main(int argc, char *argv[])
                     cmd = initCmd(argv[3]);
                     } 
                     gettimeofday(&start, NULL);
-                    execute(cmd);
+                    pid_t pid= execute(cmd);
                     gettimeofday(&end, NULL);
 
-                    Response response= initRes(getpid(),cmd.cmd,start);
+                    Response *response= initRes(pid,cmd->cmd,start);
 
-                    if (write(client_to_server, &response, sizeof(struct response)) < 0)
+                    if (write(client_to_server, response, sizeof(struct response)) < 0)
                     {
                         print_error("Failed to write to client to server fifo.\n");
                         return WRITE_ERROR;
                     }
 
-                    double time = (end.tv_sec - start.tv_sec) * 1000.0 + (end.tv_usec - start.tv_usec) / 1000.0;
-                    unsigned long time_d = (unsigned long) time;
-                    printf("Ended in %lu ms\n", time_d);
+                    printf("Ended in %lu ms\n", getTime(start,end));
 
                     close(client_to_server);
                 }

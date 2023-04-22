@@ -1,3 +1,3 @@
 #include "../includes/commands.h"
 
-void execute(Command c);
+pid_t execute(Command *c);

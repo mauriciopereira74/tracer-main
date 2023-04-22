@@ -9,7 +9,6 @@ typedef struct command
 
 } Command;
 
-Command initPipe(char *cmd, char *args[], int size);
-Command initCmd(char *cmd);
-
+Command *initPipe(char *cmd, char *args[], int size);
+Command *initCmd(char *cmd);
 #endif /* COMMANDS_H */
