@@ -58,14 +58,14 @@ $(BIN_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -I$(INC_DIR) -MMD -c $< -o $@
 	mkdir -p tmp
 
-.PHONY: clean
-clean:
+.PHONY: c
+c:
 	-rm -rf obj/* $(NAME_C)
 	-rm tracer
 	-rm tmp/*
 
-.PHONY: cleans
-cleans:
+.PHONY: cs
+cs:
 	-rm -rf obj/* $(NAME_S)
 	-rm monitor
 	-rm tmp/*
