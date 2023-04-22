@@ -44,9 +44,6 @@ int main(){
 
 		while ((read_bytes = read(client_to_server, response, sizeof(Response))) > 0){
 
-            printf("%s\n",response->cmd);
-            printf("%d\n",response->pid);
-
             if (read_bytes != sizeof(Response))
             {
                 printf("Error: read unexpected number of bytes: %d\n", read_bytes);
