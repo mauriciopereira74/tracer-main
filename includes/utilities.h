@@ -13,6 +13,8 @@
 #include "../includes/responses.h"
 #include "../includes/commands.h"
 #include <sys/time.h>
+#include <stddef.h>
+
 
 void *xmalloc(size_t size);
 void print_error(char *content);

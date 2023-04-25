@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 
     switch(argc) {
     // não fornecer comandos
-        case 1:
+        case 1: 
             print_error("Input Invalido\n");
             return 0;
         case 2:
@@ -43,6 +43,19 @@ int main(int argc, char *argv[])
             else if(strcmp(argv[1], "status") == 0){
                 /// pegar na informação do servidor
                 printf("coming....\n");
+                struct timeval start;
+                gettimeofday(&start,NULL);
+                char* cmd = "status";
+                Response *response= initRes(6969,cmd,start);
+                printf("status response created\n");
+                if (write(client_to_server, response, sizeof(struct response)) < 0)
+                {
+                    print_error("Failed to write start to client to server fifo.\n");
+                    return WRITE_ERROR;
+                }
+                printf("status response sent\n");
+                close(client_to_server);
+
             }
             break;
         case 3:
@@ -79,17 +92,24 @@ int main(int argc, char *argv[])
                     gettimeofday(&start, NULL);
                     pid_t pid= execute(cmd);
                     gettimeofday(&end, NULL);
-
                     Response *response= initRes(pid,cmd->cmd,start);
+                    Response *ender = initRes(pid,cmd->cmd,end);
 
                     if (write(client_to_server, response, sizeof(struct response)) < 0)
                     {
-                        print_error("Failed to write to client to server fifo.\n");
+                        print_error("Failed to write start to client to server fifo.\n");
+                        return WRITE_ERROR;
+                    }
+                    if (write(client_to_server, ender, sizeof(struct response)) < 0)
+                    {
+                        print_error("Failed to write end to client to server fifo.\n");
                         return WRITE_ERROR;
                     }
 
                     printf("Ended in %lu ms\n", getTime(start,end));
-
+                    free(cmd);
+                    free(response);
+                    free(ender);
                     close(client_to_server);
                 }
                 /*
