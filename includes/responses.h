@@ -8,6 +8,7 @@ typedef struct response
     int pid;
     char cmd[10];
     struct timeval start;
+    int flag;
 } Response;
 
 #endif

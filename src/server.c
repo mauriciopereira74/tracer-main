@@ -21,8 +21,8 @@ int main(){
     /* Opening communication with the client. */
     const char *fifo = "tmp/fifo";
     mkfifo(fifo, 0666);
-    int client_to_server = open(fifo, O_RDONLY | O_CREAT, 0644);
-    if (client_to_server < 0) /* Opening fifo */
+    int server_to_client = open(fifo, O_RDONLY | O_CREAT, 0644);
+    if (server_to_client < 0) /* Opening fifo */
     {
         print_error("Failed to open FIFO (server)\n");
         _exit(OPEN_ERROR);
@@ -39,7 +39,7 @@ int main(){
         int log_fd = open("tmp/log.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
         int read_bytes = 0;
-		read_bytes = read(client_to_server, response, sizeof(Response));
+		read_bytes = read(server_to_client, response, sizeof(Response));
         if (read_bytes < 0)
         {
             printf("Error reading from FIFO: %s\n", strerror(errno));
@@ -74,7 +74,7 @@ int main(){
         }*/
         close(log_fd);
     }  
-    close(client_to_server);
+    close(server_to_client);
     free_queue(queue);
     printf("free queue final do server \n");
 }

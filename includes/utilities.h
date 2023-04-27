@@ -18,6 +18,6 @@
 
 void *xmalloc(size_t size);
 void print_error(char *content);
-Response *initRes(int pid, char cmd[10], struct timeval start);
+Response *initRes(int pid, char cmd[10], struct timeval start, int flag);
 unsigned long getTime(struct timeval start,struct timeval end);
 //char* concat_args(pid_t pid, const char* cmd, struct timeval start);

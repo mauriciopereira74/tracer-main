@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
                 struct timeval start;
                 gettimeofday(&start,NULL);
                 char* cmd = "status";
-                Response *response= initRes(6969,cmd,start);
+                Response *response= initRes(6969,cmd,start,1);
                 printf("status response created\n");
                 if (write(client_to_server, response, sizeof(struct response)) < 0)
                 {
@@ -88,27 +88,71 @@ int main(int argc, char *argv[])
                     }
                     else {
                     cmd = initCmd(argv[3]);
-                    } 
-                    gettimeofday(&start, NULL);
-                    pid_t pid= execute(cmd);
-                    gettimeofday(&end, NULL);
-                    Response *response= initRes(pid,cmd->cmd,start);
-                    Response *ender = initRes(pid,cmd->cmd,end);
-
-                    if (write(client_to_server, response, sizeof(struct response)) < 0)
-                    {
-                        print_error("Failed to write start to client to server fifo.\n");
-                        return WRITE_ERROR;
                     }
+
+                    pid_t pid;
+
+                    if(((pid=fork())==0)){
+
+                    if(cmd->args_size>0){
+                        gettimeofday(&start, NULL);
+                        Response *response= initRes(pid,cmd->cmd,start,1);
+
+                        if (write(client_to_server, response, sizeof(struct response)) < 0)
+                        {
+                            print_error("Failed to write start to client to server fifo.\n");
+                            return WRITE_ERROR;
+                        }
+
+                        printf("Running PID %d\n",getpid());
+                        execvp(cmd->cmd,cmd->args);
+
+                    }
+                    else{
+                        gettimeofday(&start, NULL);
+                        Response *response= initRes(pid,cmd->cmd,start,1);
+
+                        if (write(client_to_server, response, sizeof(struct response)) < 0)
+                        {
+                            print_error("Failed to write start to client to server fifo.\n");
+                            return WRITE_ERROR;
+                        }
+
+                        printf("Running PID %d\n",pid);
+                        execlp(cmd->cmd,cmd->cmd,NULL);
+                        free(response);
+                    }
+
+
+                    perror("exec error");
+                    _exit(1);   
+                        
+                    }
+                    // wait for child process to finish
+                    int status;
+                    wait(&status);
+                    gettimeofday(&end, NULL);
+                    Response *ender = initRes(pid,cmd->cmd,end,0);
+
                     if (write(client_to_server, ender, sizeof(struct response)) < 0)
                     {
                         print_error("Failed to write end to client to server fifo.\n");
                         return WRITE_ERROR;
                     }
 
+                    if (WIFEXITED(status)) {
+
+                        if (WEXITSTATUS(status) == 0) {
+
+                        } else {
+                            printf("Child process exited with status %d\n", WEXITSTATUS(status));
+                        }
+                    } else {
+                        printf("Child process terminated abnormally\n");
+                    }
+
                     printf("Ended in %lu ms\n", getTime(start,end));
                     free(cmd);
-                    free(response);
                     free(ender);
                     close(client_to_server);
                 }
