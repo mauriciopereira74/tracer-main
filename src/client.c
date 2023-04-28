@@ -57,6 +57,10 @@ int main(int argc, char *argv[])
                 close(client_to_server);
 
             }
+            else if(strcmp(argv[1], "exit") == 0){
+                print_error("EXIT....\n");
+                return 0;
+            }
             break;
         case 3:
             // fornece execute mas nao fornece comando

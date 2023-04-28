@@ -58,14 +58,14 @@ void remove_response_from_queue(int pid, char*** queue_ptr) {
 
     *queue_ptr = queue;
 }
-Response get_response_from_queue(int pid, char** queue) {
-    Response ret;
+Response *get_response_from_queue(int pid, char** queue) {
+    Response *ret=malloc(sizeof(Response));
 
     for(int i = 0; queue[i] != NULL; i++) {
         char* pid_str = strtok(queue[i], ";");
         if(atoi(pid_str) == pid) {
             char* cmd_str = strtok(NULL, ";");
-            strcpy(ret.cmd, cmd_str);
+            strcpy(ret->cmd, cmd_str);
             break;
         }
     }

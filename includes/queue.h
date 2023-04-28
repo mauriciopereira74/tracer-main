@@ -15,7 +15,7 @@ void add_response_to_queue(Response response, char*** queue_ptr);
 
 void remove_response_from_queue(int pid, char*** queue_ptr);
 
-Response get_response_from_queue(int pid, char** queue);
+Response *get_response_from_queue(int pid, char** queue);
 
 bool isinqueue(int pid, char** queue);
 

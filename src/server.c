@@ -45,27 +45,32 @@ int main(){
             printf("Error reading from FIFO: %s\n", strerror(errno));
             break;
         }
-        if(read_bytes == sizeof(Response))
-        { // se tem algo no cmd quer dizer que há response, logo metemos na queue.
-        printf("ver se já existe um pid igual!\n");
-        if(isinqueue(response->pid, queue)){ // Falta: modificar isto para caso seja igual, e cmd "OVER", arranja o tempo de execução e escreve num ficheiro apropriado o pid,cmd, e tempo
-            printf("Já existe um programa com pid %i na queue!\n",response->pid);
-            continue;
+        if(strcmp(response->cmd,"status")!=0){
+
+            if(read_bytes == sizeof(Response)) { // se tem algo no cmd quer dizer que há response, logo metemos na queue.
+
+                if(response->flag==1){ // Se é 1 então é o início de um comando
+                    add_response_to_queue(*response, &queue);
+                    q_size++;
+                }
+                else if(response->flag==0){ // Se é 1 então é o fim de um comando
+                    // verificar se existe mesmo este pid
+                    if(isinqueue(response->pid, queue)){  // Falta: modificar isto para caso seja igual, e cmd "OVER", arranja o tempo de execução e escreve num ficheiro apropriado o pid,cmd, e tempo
+                        Response *help= malloc(sizeof(Response));
+                        help = get_response_from_queue(response->pid,queue);
+                        unsigned long cmd_time = getTime(help->start,response->start); // temos o tempo que o comando demorou a executar
+
+                    }
+
+                }
+            }
         }
-        else{
-        printf("vou meter na queue\n");
-        add_response_to_queue(*response, &queue);
-        q_size++;}
+        else{ // comando status vem aqui
+            debug_queue(queue);
+            printf("debugged queue no server\n");
         }
         if(q_size > 0 && queue[q_size-1] != NULL){
             printf("no fim da queue -> %s\n",queue[q_size-1]);
-        }
-        if(strcmp(response->cmd,"status")==0){
-            remove_response_from_queue(response->pid,&queue);
-            q_size--;
-            printf("----STATUS---- \n");
-            debug_queue(queue);
-            printf("debugged queue no server\n");
         }
         free(response);
        /* if (read_bytes == 0 && q_size == 0) {  // esta merda tem de levar uma flag quando a queue estiver resolvida e o cliente nao quiser mais nada (tem de ser um input tipo 'stop')
