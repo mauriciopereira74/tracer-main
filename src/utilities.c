@@ -46,6 +46,17 @@ Response *initRes(int pid, char cmd[10], struct timeval start, int flag){
     strcpy(r->cmd,cmd);
     r->start=start;
     r->flag=flag;
+    r->final_time=0;
+    return r;
+}
+
+Response *finishRes(int pid, char cmd[10], struct timeval end, int flag){
+    Response *r = xmalloc(sizeof(Response));
+    r->pid=pid;
+    strcpy(r->cmd,cmd);
+    r->end=end;
+    r->flag=flag;
+    r->final_time=0;
     return r;
 }
 

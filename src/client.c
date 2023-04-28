@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
                     int status;
                     wait(&status);
                     gettimeofday(&end, NULL);
-                    Response *ender = initRes(pid,cmd->cmd,end,0);
+                    Response *ender = finishRes(pid,cmd->cmd,end,0);
 
                     if (write(client_to_server, ender, sizeof(struct response)) < 0)
                     {

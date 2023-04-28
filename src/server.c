@@ -58,7 +58,7 @@ int main(){
                     if(isinqueue(response->pid, queue)){  // Falta: modificar isto para caso seja igual, e cmd "OVER", arranja o tempo de execução e escreve num ficheiro apropriado o pid,cmd, e tempo
                         Response *help= malloc(sizeof(Response));
                         help = get_response_from_queue(response->pid,queue);
-                        unsigned long cmd_time = getTime(help->start,response->start); // temos o tempo que o comando demorou a executar
+                        help->final_time = getTime(help->start,response->end); // temos o tempo que o comando demorou a executar
 
                     }
 
