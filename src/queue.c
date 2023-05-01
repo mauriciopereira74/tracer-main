@@ -11,13 +11,12 @@
 
 char** init_queue() {
     char** queue = (char**)malloc((MAX_QUEUE + 1) * sizeof(char*));
-    printf("malloc init queue \n");
     queue[0] = NULL;
     return queue;
 }
 
-void add_response_to_queue(Response response, char*** queue_ptr) {
-    char** queue = *queue_ptr;
+void add_response_to_queue(Response *response, char** queue_ptr) {
+    char** queue = queue_ptr;
 
     // Calculate the current size of the queue
     int size = 0;
@@ -32,13 +31,14 @@ void add_response_to_queue(Response response, char*** queue_ptr) {
     // Add the new response to the end of the queue
     queue[size] = malloc(MAX_RESPONSE_SIZE);
     printf("malloc add resposne \n");
-    sprintf(queue[size], "%d;%s", response.pid, response.cmd);
+    sprintf(queue[size], "%d;%s", response->pid, response->cmd);
     queue[size + 1] = NULL;
 
     // Update the pointer to the queue
-    *queue_ptr = queue;
+    queue_ptr = queue;
     printf("update no pointer da queue \n");
 }
+
 void remove_response_from_queue(int pid, char*** queue_ptr) {
     char** queue = *queue_ptr;
     int i;
@@ -79,6 +79,7 @@ void free_queue(char** queue) {
     }
     free(queue);
 }
+
 bool isinqueue(int pid, char** queue){
     printf("checking for %i in queue \n", pid);
     for (int i = 0; queue[i] != NULL; i++){
@@ -91,10 +92,14 @@ bool isinqueue(int pid, char** queue){
     return false;
 
 }
+
 void debug_queue(char** queue) { // faz dump da queue
     printf("Queue contents:\n");
     int i = 0;
     for(i = 0; queue[i] != NULL; i++) {
+            printf("HERE 1!!\n");
+            printf("%s\n",queue[i]);
+            printf("HERE!! 2\n");
             char* pid_str = strtok(queue[i], ";");
             char* cmd_str = strtok(NULL, ";");
             printf("%s -> %s\n", pid_str, cmd_str);

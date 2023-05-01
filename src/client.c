@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 
                     if(cmd->args_size>0){
                         gettimeofday(&start, NULL);
-                        Response *response= initRes(pid,cmd->cmd,start,1);
+                        Response *response= initRes(getpid(),cmd->cmd,start,1);
 
                         if (write(client_to_server, response, sizeof(struct response)) < 0)
                         {
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
                     }
                     else{
                         gettimeofday(&start, NULL);
-                        Response *response= initRes(pid,cmd->cmd,start,1);
+                        Response *response= initRes(getpid(),cmd->cmd,start,1);
 
                         if (write(client_to_server, response, sizeof(struct response)) < 0)
                         {
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
                             return WRITE_ERROR;
                         }
 
-                        printf("Running PID %d\n",pid);
+                        printf("Running PID %d\n",getpid());
                         execlp(cmd->cmd,cmd->cmd,NULL);
                         free(response);
                     }
