@@ -46,6 +46,8 @@ int main(int argc, char *argv[])
                 struct timeval start;
                 gettimeofday(&start,NULL);
                 char* cmd = "status";
+                printf("status :a inicializar o res\n");
+
                 Response *response= initRes(6969,cmd,start,1);
                 printf("status response created\n");
                 if (write(client_to_server, response, sizeof(struct response)) < 0)
@@ -100,7 +102,10 @@ int main(int argc, char *argv[])
 
                     if(cmd->args_size>0){
                         gettimeofday(&start, NULL);
+                        printf("client exec :a inicializar o res\n");
+
                         Response *response= initRes(getpid(),cmd->cmd,start,1);
+                        printf("client exec :a inicializar o res\n");
 
                         if (write(client_to_server, response, sizeof(struct response)) < 0)
                         {
@@ -114,6 +119,7 @@ int main(int argc, char *argv[])
                     }
                     else{
                         gettimeofday(&start, NULL);
+                        printf("client exec :a inicializar o res\n");
                         Response *response= initRes(getpid(),cmd->cmd,start,1);
 
                         if (write(client_to_server, response, sizeof(struct response)) < 0)
@@ -136,6 +142,7 @@ int main(int argc, char *argv[])
                     int status;
                     wait(&status);
                     gettimeofday(&end, NULL);
+                        printf("client exec :a inicializar o finishres\n");
                     Response *ender = finishRes(pid,cmd->cmd,end,0);
 
                     if (write(client_to_server, ender, sizeof(struct response)) < 0)

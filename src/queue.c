@@ -1,107 +1,79 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <stdbool.h>
+#include <string.h>
 
-#include "../includes/responses.h"
+#include "../includes/queue.h"
+#include "../includes/utilities.h"
 
-#define MAX_RESPONSE_SIZE 1024
-#define MAX_QUEUE 15
+#define QUEUE_SIZE 100
 
-char** init_queue() {
-    char** queue = (char**)malloc((MAX_QUEUE + 1) * sizeof(char*));
-    queue[0] = NULL;
+// Initialize queue and return its pointer
+Response *init_queue() {
+    printf("criar memoria para queue\n");
+    Response *queue = xmalloc(sizeof(Response) * QUEUE_SIZE);
+    printf("percorrer queue nova e inicializar para queue\n");
+    for (int i = 0; i < QUEUE_SIZE; i++) {
+        queue[i].pid = 0;
+        queue[i].flag = -1;
+    }
+    printf("percurso feito\n");
     return queue;
 }
 
-void add_response_to_queue(Response *response, char** queue_ptr) {
-    char** queue = queue_ptr;
+// Add response to queue
+void add_response_to_queue(Response *response, Response *queue) {
+    int i = 0;
+    printf("add_response -> a entrar no while\n");
 
-    // Calculate the current size of the queue
-    int size = 0;
-    while (queue[size] != NULL) {
-        size++;
+    while (queue[i].pid != 0) {
+        i++;
     }
-
-    // Resize the queue
-    queue = realloc(queue, (size + 2) * sizeof(char*)); // +2 for new element and NULL terminator
-    printf("realloc add response \n");
-
-    // Add the new response to the end of the queue
-    queue[size] = malloc(MAX_RESPONSE_SIZE);
-    printf("malloc add resposne \n");
-    sprintf(queue[size], "%d;%s", response->pid, response->cmd);
-    queue[size + 1] = NULL;
-
-    // Update the pointer to the queue
-    queue_ptr = queue;
-    printf("update no pointer da queue \n");
+    printf("encontrado - a copiar\n");
+    queue[i] = *response;
+    printf("copia feita\n");
 }
 
-void remove_response_from_queue(int pid, char*** queue_ptr) {
-    char** queue = *queue_ptr;
-    int i;
+// Remove and return response from queue by pid
+Response *get_response_from_queue(int pid, Response *queue) {
+    int i = 0;
+    printf("get: a entrar no loop\n");
 
-    for (i = 0; queue[i] != NULL; i++) {
-        char* pid_str = strtok(queue[i], ";");
-        if (pid_str != NULL && atoi(pid_str) == pid) {
-            free(queue[i]);
-            for (int j = i; queue[j + 1] != NULL; j++) {
-                queue[j] = queue[j + 1];
-            }
-            queue = realloc(queue, (i + 1) * sizeof(char*)); // Shrink the array by one
-            queue[i] = NULL;
-            break;
-        }
+    while (queue[i].pid != pid) {
+        i++;
     }
+    printf("get: loop feito - a inicializar com os parametros da queue\n");
 
-    *queue_ptr = queue;
-}
-Response *get_response_from_queue(int pid, char** queue) {
-    Response *ret=malloc(sizeof(Response));
+    Response *response = initRes(queue[i].pid,queue[i].cmd,queue[i].start,  queue[i].flag);
+    printf("get: free o membro da queue\n");
 
-    for(int i = 0; queue[i] != NULL; i++) {
-        char* pid_str = strtok(queue[i], ";");
-        if(atoi(pid_str) == pid) {
-            char* cmd_str = strtok(NULL, ";");
-            strcpy(ret->cmd, cmd_str);
-            break;
-        }
-    }
-
-    return ret;
+    return response;
 }
 
-void free_queue(char** queue) {
-    for(int i = 0; queue[i] != NULL; i++) {
-        free(queue[i]);
-    }
-    free(queue);
-}
-
-bool isinqueue(int pid, char** queue){
-    printf("checking for %i in queue \n", pid);
-    for (int i = 0; queue[i] != NULL; i++){
-        char* pid_str = strtok(queue[i], ";");
-        if (atoi(pid_str)==pid){
-            printf("found in index %i!\n", i);
+// Check if a pid is in the queue
+bool isinqueue(int pid, Response *queue) {
+    for (int i = 0; queue[i].pid != 0; i++) {
+        if (queue[i].pid == pid) {
             return true;
         }
     }
     return false;
-
 }
 
-void debug_queue(char** queue) { // faz dump da queue
-    printf("Queue contents:\n");
+
+// Debug queue by printing its contents
+void debug_queue(Response *queue) {
     int i = 0;
-    for(i = 0; queue[i] != NULL; i++) {
-            printf("HERE 1!!\n");
-            printf("%s\n",queue[i]);
-            printf("HERE!! 2\n");
-            char* pid_str = strtok(queue[i], ";");
-            char* cmd_str = strtok(NULL, ";");
-            printf("%s -> %s\n", pid_str, cmd_str);
+    printf("Queue contents:\n");
+    while (queue[i].pid != 0) {
+        printf("PID: %d | CMD: %s | START: %ld | END: %ld | FINAL TIME: %ld\n | FLAG:%d\n", queue[i].pid, queue[i].cmd, queue[i].start, queue[i].end, queue[i].final_time,queue[i].flag);
+        i++;
     }
+}
+
+// Free queue
+void free_queue(Response *queue) {
+    free(queue);
+    printf("free: free queue\n");
+
 }

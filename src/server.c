@@ -9,8 +9,6 @@
 #include <sys/wait.h>
 #include <stdlib.h>
 
-
-
 #include "../includes/server.h"
 #include "../includes/utilities.h"
 #include "../includes/responses.h"
@@ -21,25 +19,24 @@ int main(){
     /* Opening communication with the client. */
     const char *fifo = "tmp/fifo";
     mkfifo(fifo, 0666);
-    int server_to_client = open(fifo, O_RDONLY | O_CREAT, 0644);
-    if (server_to_client < 0) /* Opening fifo */
-    {
-        print_error("Failed to open FIFO (server)\n");
-        _exit(OPEN_ERROR);
-    }
-    printf("Server is online!\n");
-    char** queue = init_queue();
-
+    Response* queue = init_queue();
     int q_size = 0;
     Response *response= NULL;
-   
+    printf("Queue is online!, starting server! \n");
     while(1){
+        int server_to_client = open(fifo, O_RDONLY | O_CREAT, 0644);
+        if (server_to_client < 0) /* Opening fifo */
+        {
+            print_error("Failed to open FIFO (server)\n");
+            _exit(OPEN_ERROR);
+        }
         response = xmalloc(sizeof(Response));
         memset(response, 0, sizeof(Response));
+        response->flag = 1;
         int log_fd = open("tmp/log.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
         int read_bytes = 0;
-		read_bytes = read(server_to_client, response, sizeof(Response));
+        read_bytes = read(server_to_client, response, sizeof(Response));
         if (read_bytes < 0)
         {
             printf("Error reading from FIFO: %s\n", strerror(errno));
@@ -48,21 +45,28 @@ int main(){
         if(strcmp(response->cmd,"status")!=0){
 
             if(read_bytes == sizeof(Response)) { // se tem algo no cmd quer dizer que há response, logo metemos na queue.
-
-                if(response->flag==1){ // Se é 1 então é o início de um comando
-                    add_response_to_queue(response, queue);
-                    q_size++;
-                }
-                else if(response->flag==0){ // Se é 1 então é o fim de um comando
+                if(response->flag==0){ // Se é 0 então é o fim de um comando
                     // verificar se existe mesmo este pid
                     if(isinqueue(response->pid, queue)){  // Falta: modificar isto para caso seja igual, e cmd "OVER", arranja o tempo de execução e escreve num ficheiro apropriado o pid,cmd, e tempo
-                        Response *help= malloc(sizeof(Response));
-                        help = get_response_from_queue(response->pid,queue);
+                        printf("TIRAR DA QUEUE o pointer %p\n", (void *) response);
+                        Response *help= get_response_from_queue(response->pid,queue);
+                        for (int j = 1; j < q_size - 1; j++) {
+                            queue[j] = queue[j+1];
+                        }
+                        q_size--;
                         help->final_time = getTime(help->start,response->end); // temos o tempo que o comando demorou a executar
 
                     }
 
                 }
+                else if(response->flag==1){ // Se é 1 então é o início de um comando
+                    add_response_to_queue(response, queue);
+                    printf("O POINTER metido NA QUEUE É %p\n", (void *) response);
+                    q_size++;
+                    response->flag = 0;
+                    printf("flag acionada para %d\n", response->flag);
+                }
+
             }
         }
         else{ // comando status vem aqui
@@ -78,9 +82,10 @@ int main(){
             break;
         }*/
         close(log_fd);
+        close(server_to_client);
+        unlink(fifo);
+        mkfifo(fifo, 0666);
     }  
-    close(server_to_client);
     free_queue(queue);
     printf("free queue final do server \n");
 }
-

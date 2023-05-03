@@ -9,16 +9,14 @@
 #define MAX_RESPONSE_SIZE 1024
 #define MAX_QUEUE 15
 
-char** init_queue();
+Response* init_queue();
 
-void add_response_to_queue(Response *response, char** queue_ptr);
+void add_response_to_queue(Response *response, Response *queue);
 
-void remove_response_from_queue(int pid, char*** queue_ptr);
+Response *get_response_from_queue(int pid, Response *queue);
 
-Response *get_response_from_queue(int pid, char** queue);
+bool isinqueue(int pid, Response *queue);
 
-bool isinqueue(int pid, char** queue);
+void free_queue(Response *queue);
 
-void free_queue(char** queue);
-
-void debug_queue(char** queue);
+void debug_queue(Response *queue);
