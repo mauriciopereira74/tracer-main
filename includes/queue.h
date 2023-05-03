@@ -1,22 +1,28 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdbool.h>
+#pragma once
 
-#include "../includes/responses.h"
+#include "server.h"
+#include "responses.h"
 
 #define MAX_RESPONSE_SIZE 1024
 #define MAX_QUEUE 15
 
-Response* init_queue();
+/**
+ * @brief  queue implementation using an array.
+ * 
+ * @param values Array of Input structs, one for each job.
+ * @param size Size of the queue.
+ */
+typedef struct Queue 
+{
+    Response **values;
+    int size;
 
-void add_response_to_queue(Response *response, Response *queue);
+} Queue;
 
-Response *get_response_from_queue(int pid, Response *queue);
+void init_queue(Queue *queue);
 
-bool isinqueue(int pid, Response *queue);
+void push(Queue *queue, Response *input);
 
-void free_queue(Response *queue);
+int get(Queue *queue, int pid,Response *res);
 
-void debug_queue(Response *queue);
+void debugQueue(Queue *queue);

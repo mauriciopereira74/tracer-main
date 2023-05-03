@@ -40,7 +40,7 @@ void print_error(char *content)
     free(temp);
 }
 
-Response *initRes(int pid, char cmd[10], struct timeval start, int flag){
+Response *initRes(int pid, char cmd[64], struct timeval start, int flag){
     Response *r = xmalloc(sizeof(Response));
     r->pid=pid;
     strcpy(r->cmd,cmd);

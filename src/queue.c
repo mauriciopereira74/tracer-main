@@ -3,77 +3,56 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "../includes/server.h"
 #include "../includes/queue.h"
 #include "../includes/utilities.h"
 
-#define QUEUE_SIZE 100
-
-// Initialize queue and return its pointer
-Response *init_queue() {
-    printf("criar memoria para queue\n");
-    Response *queue = xmalloc(sizeof(Response) * QUEUE_SIZE);
-    printf("percorrer queue nova e inicializar para queue\n");
-    for (int i = 0; i < QUEUE_SIZE; i++) {
-        queue[i].pid = 0;
-        queue[i].flag = -1;
-    }
-    printf("percurso feito\n");
-    return queue;
+/**
+ * @brief Initializes a priority queue (sorted stack) with size as 0 and allocates memory for
+ * it elements.
+ * 
+ * @param queue Given PriorityQueue object.
+ */
+void init_queue(Queue *queue)
+{
+    queue->values = (Response**)xmalloc(sizeof(Response) * MAX_QUEUE);
+    queue->size = 0;
 }
 
-// Add response to queue
-void add_response_to_queue(Response *response, Response *queue) {
-    int i = 0;
-    printf("add_response -> a entrar no while\n");
+void push(Queue *queue, Response *input)
+{
+    if (queue->size == MAX_QUEUE)
+    {
+        Response **queue_temp = realloc(queue->values, queue->size * sizeof(Response));
 
-    while (queue[i].pid != 0) {
-        i++;
+        if (queue_temp == NULL) print_error("Failed to allocate memory.\n");
+        else queue->values = queue_temp;
     }
-    printf("encontrado - a copiar\n");
-    queue[i] = *response;
-    printf("copia feita\n");
+    queue->values[queue->size] = input;
+    queue->size++;
 }
 
-// Remove and return response from queue by pid
-Response *get_response_from_queue(int pid, Response *queue) {
-    int i = 0;
-    printf("get: a entrar no loop\n");
+int get(Queue *queue, int pid,Response *res)
+{
 
-    while (queue[i].pid != pid) {
-        i++;
-    }
-    printf("get: loop feito - a inicializar com os parametros da queue\n");
-
-    Response *response = initRes(queue[i].pid,queue[i].cmd,queue[i].start,  queue[i].flag);
-    printf("get: free o membro da queue\n");
-
-    return response;
-}
-
-// Check if a pid is in the queue
-bool isinqueue(int pid, Response *queue) {
-    for (int i = 0; queue[i].pid != 0; i++) {
-        if (queue[i].pid == pid) {
-            return true;
+    for(int i=0;i<queue->size;i++){
+        if(queue->values[i]->pid==pid){
+            res=queue->values[i];
+            return 1;
         }
     }
-    return false;
+    return 0;
 }
 
 
-// Debug queue by printing its contents
-void debug_queue(Response *queue) {
-    int i = 0;
-    printf("Queue contents:\n");
-    while (queue[i].pid != 0) {
-        printf("PID: %d | CMD: %s | START: %ld | END: %ld | FINAL TIME: %ld\n | FLAG:%d\n", queue[i].pid, queue[i].cmd, queue[i].start, queue[i].end, queue[i].final_time,queue[i].flag);
-        i++;
+void debugQueue(Queue *queue)
+{
+    Response *response = xmalloc(sizeof(Response));
+    for(int i=0;i<queue->size;i++){
+        response=queue->values[i];
+        printf("PID->%d CMD-> %s\n",response->pid,response->cmd);
     }
-}
-
-// Free queue
-void free_queue(Response *queue) {
-    free(queue);
-    printf("free: free queue\n");
+    free(response);
 
 }
+

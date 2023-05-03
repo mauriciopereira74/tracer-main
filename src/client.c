@@ -46,8 +46,6 @@ int main(int argc, char *argv[])
                 struct timeval start;
                 gettimeofday(&start,NULL);
                 char* cmd = "status";
-                printf("status :a inicializar o res\n");
-
                 Response *response= initRes(6969,cmd,start,1);
                 printf("status response created\n");
                 if (write(client_to_server, response, sizeof(struct response)) < 0)
@@ -96,16 +94,25 @@ int main(int argc, char *argv[])
                     cmd = initCmd(argv[3]);
                     }
 
+                    int pipe_fd[2];
+
+                    if(pipe(pipe_fd)<0){
+
+                        perror("pipe");
+
+                        return 1;
+                    }
+
                     pid_t pid;
 
                     if(((pid=fork())==0)){
 
                     if(cmd->args_size>0){
                         gettimeofday(&start, NULL);
-                        printf("client exec :a inicializar o res\n");
+
+                        write(pipe_fd[1],&start,sizeof(struct timeval));
 
                         Response *response= initRes(getpid(),cmd->cmd,start,1);
-                        printf("client exec :a inicializar o res\n");
 
                         if (write(client_to_server, response, sizeof(struct response)) < 0)
                         {
@@ -119,7 +126,9 @@ int main(int argc, char *argv[])
                     }
                     else{
                         gettimeofday(&start, NULL);
-                        printf("client exec :a inicializar o res\n");
+
+                        write(pipe_fd[1],&start,sizeof(struct timeval));
+
                         Response *response= initRes(getpid(),cmd->cmd,start,1);
 
                         if (write(client_to_server, response, sizeof(struct response)) < 0)
@@ -142,7 +151,6 @@ int main(int argc, char *argv[])
                     int status;
                     wait(&status);
                     gettimeofday(&end, NULL);
-                        printf("client exec :a inicializar o finishres\n");
                     Response *ender = finishRes(pid,cmd->cmd,end,0);
 
                     if (write(client_to_server, ender, sizeof(struct response)) < 0)
@@ -161,6 +169,9 @@ int main(int argc, char *argv[])
                     } else {
                         printf("Child process terminated abnormally\n");
                     }
+
+                    close(pipe_fd[1]);
+                    read(pipe_fd[0],&start,sizeof(int));
 
                     printf("Ended in %lu ms\n", getTime(start,end));
                     free(cmd);
