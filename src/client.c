@@ -43,19 +43,17 @@ int main(int argc, char *argv[])
             else if(strcmp(argv[1], "status") == 0){
                 /// pegar na informação do servidor
 
-                char fifo[64] = "tmp/fifoS";
-                mkfifo(fifo, 0666);
-
-                int status_message = open(fifo, O_RDONLY);
+                const char *fifoS = "tmp/fifoS";
+                mkfifo(fifoS, 0666);
 
                 pid_t pid;
 
                 if(((pid=fork())==0)){
-
+                    
                     struct timeval start;
                     gettimeofday(&start,NULL);
 
-                    Response *response= initStatus(getpid(),argv[1],start,2,fifo);
+                    Response *response= initStatus(getpid(),argv[1],start,2,"tmp/fifoS");
 
                     if (write(client_to_server, response, sizeof(struct response)) < 0)
                     {
@@ -69,12 +67,22 @@ int main(int argc, char *argv[])
                 int status;
                 wait(&status);
 
+                int status_message = open(fifoS, O_RDONLY | O_CREAT, 0644);
+
+                if (status_message < 0)
+                {
+                    print_error("Failed to open fifoS (client).\n");
+                    return OPEN_ERROR;
+                }
+
                 char statusM[BUFSIZ];
 
                 if(read(status_message,&statusM,1024)<0){
                     print_error("Failed to read status to server to client fifoS.\n");
                     return READ_ERROR;
                 }
+
+                printf("%s\n",statusM);
 
                 close(status_message);
 

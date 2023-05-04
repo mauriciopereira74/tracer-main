@@ -58,14 +58,28 @@ void debugQueue(Queue *queue)
 
 }
 
-char *getStatus(Queue *queue)
+void queue_to_string(Queue *queue, char output[BUFSIZ])
 {
-    Response *response = xmalloc(sizeof(Response));
-    for(int i=0;i<queue->size;i++){
-        response=queue->values[i];
-        printf("PID->%d CMD-> %s\n",response->pid,response->cmd);
-    }
-    free(response);
+    int i;
+    Response *response;
+    char temp[1024];
 
+    output[0] = '\0'; // Initialize output to an empty string
+
+    for (i = 0; i < queue->size; i++) {
+
+        response = queue->values[i];
+
+        struct timeval end;
+        gettimeofday(&end, NULL);
+
+        response->final_time=getTime(response->start,end);
+
+        // Format the response data as a string
+        sprintf(temp, "%d %s %llu\n",response->pid, response->cmd, response->final_time);
+
+        // Append the formatted response string to the output
+        strcat(output, temp);
+    }
 }
 

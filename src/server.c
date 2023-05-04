@@ -58,7 +58,6 @@ int main(){
                         response->start=help->start;
                         response->final_time=getTime(response->start,response->end);
                         free(help);
-                        printf("FINAL TIME-> %llu\n" , response->final_time);
                     }
                     else{
                         printf("NO PID IN QUEUE\n");
@@ -68,17 +67,21 @@ int main(){
         }
         else{ // comando status vem aqui
 
-            printf("HERE!!!!\n");
             int status_message = open(response->fifo, O_WRONLY);
-            char statusM[BUFSIZ]; 
-            sprintf(statusM, "%s\n", "working");
+            if (status_message < 0)
+            {
+                print_error("Failed to open fifoS (client).\n");
+                return OPEN_ERROR;
+            }
 
+            char statusM[BUFSIZ]; 
+            queue_to_string(queue,statusM);
 
             if (write(status_message, &statusM, strlen(statusM)) < 0)
             {
                 print_error("Failed to write end to client to server fifo.\n");
                 return WRITE_ERROR;
-            }
+            } 
         }
     
         close(log_fd);

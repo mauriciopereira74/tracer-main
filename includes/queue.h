@@ -25,6 +25,6 @@ void push(Queue *queue, Response *input);
 
 Response *get(Queue *queue, int pid);
 
-char *getStatus(Queue *queue);
+void queue_to_string(Queue *queue, char output[BUFSIZ]);
 
 void debugQueue(Queue *queue);
