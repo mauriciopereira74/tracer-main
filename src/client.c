@@ -42,19 +42,41 @@ int main(int argc, char *argv[])
             }
             else if(strcmp(argv[1], "status") == 0){
                 /// pegar na informação do servidor
-                printf("coming....\n");
-                struct timeval start;
-                gettimeofday(&start,NULL);
-                char* cmd = "status";
-                Response *response= initRes(6969,cmd,start,1);
-                printf("status response created\n");
-                if (write(client_to_server, response, sizeof(struct response)) < 0)
-                {
-                    print_error("Failed to write start to client to server fifo.\n");
-                    return WRITE_ERROR;
+
+                char fifo[64] = "tmp/fifoS";
+                mkfifo(fifo, 0666);
+
+                int status_message = open(fifo, O_RDONLY);
+
+                pid_t pid;
+
+                if(((pid=fork())==0)){
+
+                    struct timeval start;
+                    gettimeofday(&start,NULL);
+
+                    Response *response= initStatus(getpid(),argv[1],start,2,fifo);
+
+                    if (write(client_to_server, response, sizeof(struct response)) < 0)
+                    {
+                        print_error("Failed to write start to client to server fifo.\n");
+                        return WRITE_ERROR;
+                    }
+
+                    close(client_to_server);
                 }
-                printf("status response sent\n");
-                close(client_to_server);
+
+                int status;
+                wait(&status);
+
+                char statusM[BUFSIZ];
+
+                if(read(status_message,&statusM,1024)<0){
+                    print_error("Failed to read status to server to client fifoS.\n");
+                    return READ_ERROR;
+                }
+
+                close(status_message);
 
             }
             else if(strcmp(argv[1], "exit") == 0){
@@ -113,6 +135,7 @@ int main(int argc, char *argv[])
                         write(pipe_fd[1],&start,sizeof(struct timeval));
 
                         Response *response= initRes(getpid(),cmd->cmd,start,1);
+
 
                         if (write(client_to_server, response, sizeof(struct response)) < 0)
                         {
@@ -174,6 +197,7 @@ int main(int argc, char *argv[])
                     read(pipe_fd[0],&start,sizeof(int));
 
                     printf("Ended in %lu ms\n", getTime(start,end));
+
                     free(cmd);
                     free(ender);
                     close(client_to_server);

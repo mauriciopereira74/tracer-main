@@ -40,7 +40,8 @@ void print_error(char *content)
     free(temp);
 }
 
-Response *initRes(int pid, char cmd[64], struct timeval start, int flag){
+Response *initRes(int pid, char cmd[64], struct timeval start, int flag)
+{
     Response *r = xmalloc(sizeof(Response));
     r->pid=pid;
     strcpy(r->cmd,cmd);
@@ -50,7 +51,20 @@ Response *initRes(int pid, char cmd[64], struct timeval start, int flag){
     return r;
 }
 
-Response *finishRes(int pid, char cmd[10], struct timeval end, int flag){
+Response *initStatus(int pid, char cmd[64], struct timeval start, int flag, char fifo[64])
+{
+    Response *r = xmalloc(sizeof(Response));
+    r->pid=pid;
+    strcpy(r->cmd,cmd);
+    r->start=start;
+    r->flag=flag;
+    strcpy(r->fifo,fifo);
+    return r;
+}
+
+
+Response *finishRes(int pid, char cmd[64], struct timeval end, int flag)
+{
     Response *r = xmalloc(sizeof(Response));
     r->pid=pid;
     strcpy(r->cmd,cmd);

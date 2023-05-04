@@ -28,24 +28,37 @@ void push(Queue *queue, Response *input)
         if (queue_temp == NULL) print_error("Failed to allocate memory.\n");
         else queue->values = queue_temp;
     }
+    input->start.tv_usec=0;
     queue->values[queue->size] = input;
     queue->size++;
 }
 
-int get(Queue *queue, int pid,Response *res)
+Response *get(Queue *queue, int pid)
 {
-
+    Response *res= xmalloc(sizeof(Response));
     for(int i=0;i<queue->size;i++){
         if(queue->values[i]->pid==pid){
             res=queue->values[i];
-            return 1;
+            queue->size--;
+            return res;
         }
     }
-    return 0;
+    return NULL;
 }
 
 
 void debugQueue(Queue *queue)
+{
+    Response *response = xmalloc(sizeof(Response));
+    for(int i=0;i<queue->size;i++){
+        response=queue->values[i];
+        printf("PID->%d CMD-> %s\n",response->pid,response->cmd);
+    }
+    free(response);
+
+}
+
+char *getStatus(Queue *queue)
 {
     Response *response = xmalloc(sizeof(Response));
     for(int i=0;i<queue->size;i++){

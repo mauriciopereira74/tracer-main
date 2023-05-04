@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include <stdlib.h>
+#include <sys/time.h>
 
 
 
@@ -49,18 +49,16 @@ int main(){
 
             if(read_bytes == sizeof(Response)) { // se tem algo no cmd quer dizer que há response, logo metemos na queue.
 
-                if(response->flag==1){
-                printf("BEFORE QUEUE-> %d\n",response->pid);    // Se é 1 então é o início de um comando
+                if(response->flag==1){  // Se é 1 então é o início de um comando
                 push(queue,response); // até aqui corre tudo bem
                 }
                 else if(response->flag==0){ // Se é 1 então é o fim de um comando
                     Response *help= malloc(sizeof(Response));
-                    help=queue->values[0];
-                    printf("HELP-> %d\n",help->pid);
-                    printf("RESPONSE-> %d\n",response->pid);
-                    if(get(queue,response->pid,help)==1){
-                        help->final_time = getTime(help->start,response->end);
-                        //printf("FINAL TIME->%lu\n",help->final_time);
+                    if((help = get(queue,response->pid)) != NULL){
+                        response->start=help->start;
+                        response->final_time=getTime(response->start,response->end);
+                        free(help);
+                        printf("FINAL TIME-> %llu\n" , response->final_time);
                     }
                     else{
                         printf("NO PID IN QUEUE\n");
@@ -69,19 +67,22 @@ int main(){
             }
         }
         else{ // comando status vem aqui
-            debugQueue(queue);
+
+            printf("HERE!!!!\n");
+            int status_message = open(response->fifo, O_WRONLY);
+            char statusM[BUFSIZ]; 
+            sprintf(statusM, "%s\n", "working");
+
+
+            if (write(status_message, &statusM, strlen(statusM)) < 0)
+            {
+                print_error("Failed to write end to client to server fifo.\n");
+                return WRITE_ERROR;
+            }
         }
-        /* if(q_size > 0 && queue[q_size-1] != NULL){
-            printf("no fim da queue -> %s\n",queue[q_size-1]);
-        } */
-        
-       /* if (read_bytes == 0 && q_size == 0) {  // esta merda tem de levar uma flag quando a queue estiver resolvida e o cliente nao quiser mais nada (tem de ser um input tipo 'stop')
-            printf("Client closed connection \n");
-            break;
-        }*/
+    
         close(log_fd);
-    }  
+    }
     close(server_to_client);
-    printf("free queue final do server \n");
 }
 

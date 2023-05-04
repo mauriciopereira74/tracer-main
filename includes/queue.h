@@ -23,6 +23,8 @@ void init_queue(Queue *queue);
 
 void push(Queue *queue, Response *input);
 
-int get(Queue *queue, int pid,Response *res);
+Response *get(Queue *queue, int pid);
+
+char *getStatus(Queue *queue);
 
 void debugQueue(Queue *queue);
