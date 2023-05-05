@@ -57,6 +57,7 @@ $(BIN_DIR)/%.o: $(SRC_DIR)/%.c
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) -I$(INC_DIR) -MMD -c $< -o $@
 	mkdir -p tmp
+	mkdir -p cache
 
 .PHONY: c
 c:
@@ -71,7 +72,7 @@ cs:
 	-rm tmp/*
 
 .PHONY: call
-call: 
+call:
 	-rm -rf obj/* $(NAME_C) $(NAME_S)
 	-rm tracer
 	-rm monitor

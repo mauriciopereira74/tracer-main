@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <time.h>
 #include <sys/time.h>
+#include <sys/stat.h>
 
 #include "../includes/client.h"
 #include "../includes/execute.h"
@@ -79,6 +80,39 @@ unsigned long getTime(struct timeval start,struct timeval end){
     unsigned long time_d = (unsigned long) time;
     return time_d;
 }
+
+void responseFile(Response *response,char *path)
+{
+    char filename[64];
+    sprintf(filename, "%s/%d.txt", path,response->pid);
+
+    int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC);
+    if (fd == -1)
+    {
+        print_error("Failed to open cmd file\n");
+    }
+
+    char buffer[128];
+    int n = sprintf(buffer, "%s %lu\n", response->cmd, response->final_time);
+    if (write(fd, buffer, n) < 0)
+    {
+        print_error("Failed to write end to client to server fifo.\n");
+    }
+    close(fd);
+}
+
+int directory_exists(const char* path)
+{
+  struct stat sb;
+  if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)) {
+    /* Directory exists. */
+    return 1;
+  } else {
+    /* Directory does not exist. */
+    return 0;
+  }
+}
+
 /*
 char* concat_args(pid_t pid, const char* cmd, struct timeval start) {
     char* buffer = malloc(128 * sizeof(char));

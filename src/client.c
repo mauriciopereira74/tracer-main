@@ -62,6 +62,8 @@ int main(int argc, char *argv[])
                     }
 
                     close(client_to_server);
+                    free(response);
+                    _exit(1);
                 }
 
                 int status;
@@ -82,10 +84,8 @@ int main(int argc, char *argv[])
                     return READ_ERROR;
                 }
 
-                printf("%s\n",statusM);
-
+                printf("%s",statusM);
                 close(status_message);
-
             }
             else if(strcmp(argv[1], "exit") == 0){
                 print_error("EXIT....\n");
@@ -153,6 +153,7 @@ int main(int argc, char *argv[])
 
                         printf("Running PID %d\n",getpid());
                         execvp(cmd->cmd,cmd->args);
+                        free(args);
 
                     }
                     else{

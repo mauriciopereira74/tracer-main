@@ -22,4 +22,6 @@ Response *initRes(int pid, char cmd[64], struct timeval start, int flag);
 Response *initStatus(int pid, char cmd[64], struct timeval start, int flag, char fifo[64]);
 Response *finishRes(int pid, char cmd[64], struct timeval end, int flag);
 unsigned long getTime(struct timeval start,struct timeval end);
+void responseFile(Response *response,char *path);
+int directory_exists(const char* path);
 //char* concat_args(pid_t pid, const char* cmd, struct timeval start);

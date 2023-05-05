@@ -16,76 +16,98 @@
 #include "../includes/responses.h"
 #include "../includes/queue.h"
 
-int main(){
+int main(int argc, char *argv[]){
 
-    /* Opening communication with the client. */
-    const char *fifo = "tmp/fifo";
-    mkfifo(fifo, 0666);
-    int server_to_client = open(fifo, O_RDONLY | O_CREAT, 0644);
-    if (server_to_client < 0) /* Opening fifo */
-    {
-        print_error("Failed to open FIFO (server)\n");
-        _exit(OPEN_ERROR);
+    if(argc<=1){
+        print_error("Esqueceu de fornecer a path para a diretoria em que deseja armazenar os comandos executados!\n");
     }
-    printf("Server is online!\n");
-    Queue *queue= (Queue *) xmalloc(sizeof(Queue));
-    init_queue(queue);
+    else{
+        if(directory_exists(argv[1])==1);
+        else{
+            if((fork())==0){
+                execlp("mkdir","mkdir",argv[1]);
+                _exit(1);
+            }
+            wait(NULL);
+        }
 
-    Response *response= NULL;
-   
-    while(1){
-        response = xmalloc(sizeof(Response));
-    
-        int log_fd = open("tmp/log.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
-
-        int read_bytes = 0;
-		read_bytes = read(server_to_client, response, sizeof(Response));
-        if (read_bytes < 0)
+        /* Opening communication with the client. */
+        const char *fifo = "tmp/fifo";
+        mkfifo(fifo, 0666);
+        int server_to_client = open(fifo, O_RDONLY | O_CREAT, 0644);
+        if (server_to_client < 0) /* Opening fifo */
         {
-            printf("Error reading from FIFO: %s\n", strerror(errno));
-            break;
+            print_error("Failed to open FIFO (server)\n");
+            _exit(OPEN_ERROR);
         }
-        if(strcmp(response->cmd,"status")!=0){
+        printf("Server is online!\n");
+        Queue *queue= (Queue *) xmalloc(sizeof(Queue));
+        init_queue(queue);
 
-            if(read_bytes == sizeof(Response)) { // se tem algo no cmd quer dizer que há response, logo metemos na queue.
+        Response *response= NULL;
+   
+        while(1){
+            response = xmalloc(sizeof(Response));
+        
+            int log_fd = open("tmp/log.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
-                if(response->flag==1){  // Se é 1 então é o início de um comando
-                push(queue,response); // até aqui corre tudo bem
-                }
-                else if(response->flag==0){ // Se é 1 então é o fim de um comando
-                    Response *help= malloc(sizeof(Response));
-                    if((help = get(queue,response->pid)) != NULL){
-                        response->start=help->start;
-                        response->final_time=getTime(response->start,response->end);
-                        free(help);
+            int read_bytes = 0;
+            read_bytes = read(server_to_client, response, sizeof(Response));
+            if (read_bytes < 0)
+            {
+                printf("Error reading from FIFO: %s\n", strerror(errno));
+                break;
+            }
+            if(strcmp(response->cmd,"status")!=0){
+
+                if(read_bytes == sizeof(Response)) { // se tem algo no cmd quer dizer que há response, logo metemos na queue.
+
+                    if(response->flag==1){  // Se é 1 então é o início de um comando
+
+                    push(queue,response); // até aqui corre tudo bem
                     }
-                    else{
-                        printf("NO PID IN QUEUE\n");
+                    else if(response->flag==0){ // Se é 1 então é o fim de um comando
+
+                        Response *help= malloc(sizeof(Response));
+
+                        if((help = get(queue,response->pid)) != NULL){
+
+                            response->start=help->start;
+                            free(help);
+
+                            response->final_time=getTime(response->start,response->end);
+                            responseFile(response,argv[1]);
+                            free(response);
+                        }
+                        else{
+                            printf("NO PID IN QUEUE\n");
+                        }
                     }
                 }
             }
-        }
-        else{ // comando status vem aqui
+            else{ // comando status vem aqui
 
-            int status_message = open(response->fifo, O_WRONLY);
-            if (status_message < 0)
-            {
-                print_error("Failed to open fifoS (client).\n");
-                return OPEN_ERROR;
+                int status_message = open(response->fifo, O_WRONLY);
+                if (status_message < 0)
+                {
+                    print_error("Failed to open fifoS (client).\n");
+                    return OPEN_ERROR;
+                }
+
+                char statusM[BUFSIZ]; 
+                queue_to_string(queue,statusM);
+
+                if (write(status_message, &statusM, strlen(statusM)) < 0)
+                {
+                    print_error("Failed to write end to client to server fifo.\n");
+                    return WRITE_ERROR;
+                } 
             }
-
-            char statusM[BUFSIZ]; 
-            queue_to_string(queue,statusM);
-
-            if (write(status_message, &statusM, strlen(statusM)) < 0)
-            {
-                print_error("Failed to write end to client to server fifo.\n");
-                return WRITE_ERROR;
-            } 
+        
+            close(log_fd);
         }
-    
-        close(log_fd);
+        close(server_to_client);
+
     }
-    close(server_to_client);
 }
 

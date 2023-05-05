@@ -76,7 +76,7 @@ void queue_to_string(Queue *queue, char output[BUFSIZ])
         response->final_time=getTime(response->start,end);
 
         // Format the response data as a string
-        sprintf(temp, "%d %s %llu\n",response->pid, response->cmd, response->final_time);
+        sprintf(temp, "%d %s %lu\n",response->pid, response->cmd, response->final_time);
 
         // Append the formatted response string to the output
         strcat(output, temp);
