@@ -5,6 +5,7 @@
         "responses.h": "c",
         "stat.h": "c",
         "client.h": "c",
-        "execute.h": "c"
+        "execute.h": "c",
+        "stddef.h": "c"
     }
 }

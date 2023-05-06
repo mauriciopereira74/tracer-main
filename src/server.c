@@ -91,7 +91,7 @@ int main(int argc, char *argv[]){
 
                 close(status_message);
             }
-            else if(strcmp(response->cmd,"stats-time")==0 && response->flag==STATSTIME){
+            else if(response->flag==STATSTIME){
 
                 int statsTime_message = open(response->fifo, O_WRONLY);
                 if (statsTime_message < 0)
@@ -135,6 +135,25 @@ int main(int argc, char *argv[]){
                     return WRITE_ERROR;
                 } 
                 
+            }
+            else if(response->flag==STATSUNIQ) {
+
+                int statsUniq_message = open(response->fifo, O_WRONLY);
+                if (statsUniq_message < 0)
+                {
+                    print_error("Failed to open fifoS (client).\n");
+                    return OPEN_ERROR;
+                }
+                
+                char statsUniqM[BUFSIZ];
+                uniqC(response->pids,argv[1],statsUniqM);
+
+                if (write(statsUniq_message, &statsUniqM, strlen(statsUniqM)) < 0)
+                {
+                    print_error("Failed to write end to client to server fifo.\n");
+                    return WRITE_ERROR;
+                }
+
             }
             else{
 

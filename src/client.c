@@ -232,11 +232,8 @@ int main(int argc, char *argv[])
                 pid_t pid;
 
                 if(((pid=fork())==0)){
-                            
-                    struct timeval start;
-                    gettimeofday(&start,NULL);
 
-                    Response *statsTime = initStime(getpid(),argv[1],pids,STATSTIME,fifoStime);
+                    Response *statsTime = initStime(getpid(),pids,STATSTIME,fifoStime);
 
                     if (write(client_to_server, statsTime, sizeof(struct response)) < 0)
                     {
@@ -288,13 +285,10 @@ int main(int argc, char *argv[])
                 pid_t pid;
 
                 if(((pid=fork())==0)){
-                            
-                    struct timeval start;
-                    gettimeofday(&start,NULL);
 
-                    Response *statsTime = initScommand(getpid(),argv[2],pids,STATSCOMMAND,fifoScommand);
+                    Response *statsCommand = initScommand(getpid(),argv[2],pids,STATSCOMMAND,fifoScommand);
 
-                    if (write(client_to_server, statsTime, sizeof(struct response)) < 0)
+                    if (write(client_to_server, statsCommand, sizeof(struct response)) < 0)
                     {
                         print_error("Failed to write start to client to server fifo.\n");
                         return WRITE_ERROR;
@@ -325,6 +319,59 @@ int main(int argc, char *argv[])
                 printf("%s",statsCommandM);
                 close(statsCommand_message);
 
+            }
+            else if(strcmp(argv[1],"stats-uniq")== 0){
+
+                char pids[64];
+                
+                for(int i = 2; i < argc; i++) {
+                    /* Append the pid to the string with a separator. */
+                    strcat(pids, argv[i]);
+                    if(i < argc - 1) {
+                    strcat(pids, " ");
+                    }
+                }
+
+                const char *fifoSuniq = "tmp/fifoSuniq";
+                mkfifo(fifoSuniq, 0666);
+
+                pid_t pid;
+
+                if(((pid=fork())==0)){
+
+                    Response *statsUniq = initSuniq(getpid(),pids,STATSUNIQ,fifoSuniq);
+
+                    if (write(client_to_server, statsUniq, sizeof(struct response)) < 0)
+                    {
+                        print_error("Failed to write start to client to server fifo.\n");
+                        return WRITE_ERROR;
+                    }
+
+                    close(client_to_server);
+                    _exit(1);
+                }
+
+                int status;
+                wait(&status);
+
+                int statsUniq_message = open(fifoSuniq, O_RDONLY | O_CREAT, 0644);
+
+                if (statsUniq_message < 0)
+                {
+                    print_error("Failed to open fifoS (client).\n");
+                    return OPEN_ERROR;
+                }
+
+                char statsUniqM[BUFSIZ];
+
+                if(read(statsUniq_message,&statsUniqM,1024)<0){
+                    print_error("Failed to read status to server to client fifoS.\n");
+                    return READ_ERROR;
+                }
+
+                printf("%s",statsUniqM);
+                close(statsUniq_message);
+                
             }
     }
 }

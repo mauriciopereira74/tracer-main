@@ -63,11 +63,10 @@ Response *initStatus(int pid, char cmd[64], struct timeval start, int flag, char
     return r;
 }
 
-Response *initStime(int pid, char cmd[64],char pids[64],int flag, char fifo[64])
+Response *initStime(int pid, char pids[64],int flag, char fifo[64])
 {
     Response *r = xmalloc(sizeof(Response));
     r->pid=pid;
-    strcpy(r->cmd,cmd);
     strcpy(r->pids,pids);
     r->flag=flag;
     strcpy(r->fifo,fifo);
@@ -79,6 +78,16 @@ Response *initScommand(int pid, char cmd[64],char pids[64],int flag, char fifo[6
     Response *r = xmalloc(sizeof(Response));
     r->pid=pid;
     strcpy(r->cmd,cmd);
+    strcpy(r->pids,pids);
+    r->flag=flag;
+    strcpy(r->fifo,fifo);
+    return r;
+}
+
+Response *initSuniq(int pid,char pids[64],int flag, char fifo[64])
+{
+    Response *r = xmalloc(sizeof(Response));
+    r->pid=pid;
     strcpy(r->pids,pids);
     r->flag=flag;
     strcpy(r->fifo,fifo);
@@ -134,10 +143,153 @@ int directory_exists(const char* path)
   }
 }
 
-/*
-char* concat_args(pid_t pid, const char* cmd, struct timeval start) {
-    char* buffer = malloc(128 * sizeof(char));
-    sprintf(buffer, "pid=%d cmd=%s start=%ld.%06ld", pid, cmd, start.tv_sec, start.tv_usec);
-    return buffer;
+unsigned long count_total_time(char pids[64],char *path) {
+
+    char *pid[128];
+    char *token = strtok(pids, " ");
+
+    int i=0;
+    while (token != NULL){
+        pid[i] = token;
+        i++;
+        token = strtok(NULL, " ");
+    }
+
+    unsigned long total_time = 0;
+    char filename[128];
+    int fd;
+
+    for (int j = 0; j < i; j++) {
+
+        sprintf(filename, "%s/%s.txt", path ,pid[j]);
+        fd = open(filename, O_RDONLY);
+
+         if (fd < 0)
+        {
+            printf("Failed to open %s (server).\n",filename);
+            return OPEN_ERROR;
+        }
+
+        char cmd[64];
+        unsigned long time;
+        int num_bytes_read;
+
+        while ((num_bytes_read = read(fd, cmd, sizeof(cmd))) > 0) {
+            if (sscanf(cmd, "%*s %lu", &time) == 1) {
+                total_time += time;
+            }
+        }
+
+    }
+    return total_time;
 }
-*/
+
+int count_execs(char command[64], char pids[64], char *path) {
+
+    char *pid[128];
+    char *token = strtok(pids, " ");
+
+    int i=0;
+    while (token != NULL){
+        pid[i] = token;
+        i++;
+        token = strtok(NULL, " ");
+    }
+
+    char filename[128];
+    int fd;
+    int count=0;
+
+    for (int j = 0; j < i; j++) {
+
+        sprintf(filename, "%s/%s.txt", path ,pid[j]);
+        fd = open(filename, O_RDONLY);
+
+         if (fd < 0)
+        {
+            printf("Failed to open %s (server).\n",filename);
+            return OPEN_ERROR;
+        }
+
+        char cmd[64];
+        char cmd2[64];
+        int num_bytes_read;
+
+        while ((num_bytes_read = read(fd, cmd, sizeof(cmd))) > 0) {
+            if (sscanf(cmd, "%s %*lu", cmd2) == 1) {
+                if(strcmp(cmd2,command)) count++;
+            }
+        }
+
+    }
+    return count;
+}
+
+void remove_duplicates(char *cmds[128], int size) {
+    int i, j, k;
+    for (i = 0; i < size; ++i) {
+        for (j = i + 1; j < size;) {
+            if (strcmp(cmds[i], cmds[j]) == 0) {
+                // Remove the duplicate
+                for (k = j; k < size - 1; ++k) {
+                    cmds[k] = cmds[k+1];
+                }
+                --size;
+            } else {
+                ++j;
+            }
+        }
+    }
+}
+
+void uniqC(char pids[64], char *path, char output[BUFSIZ]){
+
+    char *pid[128];
+    char *token = strtok(pids, " ");
+
+    int i=0;
+    while (token != NULL){
+        pid[i] = token;
+        i++;
+        token = strtok(NULL, " ");
+    }
+
+    char filename[128];
+    int fd;
+
+    for (int j = 0; j < i; j++) {
+
+        sprintf(filename, "%s/%s.txt", path ,pid[j]);
+        fd = open(filename, O_RDONLY);
+
+         if (fd < 0)
+        {
+            printf("Failed to open %s (server).\n",filename);
+        }
+
+        char cmd[64];
+        char cmd2[64];
+        int num_bytes_read;
+
+        char *aux[128];
+        int k=0;
+
+
+        while ((num_bytes_read = read(fd, cmd, sizeof(cmd))) > 0) {
+            if (sscanf(cmd, "%s %*lu", cmd2) == 1) {
+                aux[k++]=cmd2;
+            }
+        }
+
+        remove_duplicates(aux,k);
+        char temp[1024];
+
+        for (int l = 0; l < k; l++) {
+            sprintf(temp, "%s\n",aux[l]);
+            strcat(output, temp);
+        }
+
+    }
+
+}
+

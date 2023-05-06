@@ -14,16 +14,33 @@
 #include "../includes/commands.h"
 #include <sys/time.h>
 #include <stddef.h>
+#include <stdio.h>
 
 
 void *xmalloc(size_t size);
+
 void print_error(char *content);
+
 Response *initRes(int pid, char cmd[64], struct timeval start, int flag);
+
 Response *initStatus(int pid, char cmd[64], struct timeval start, int flag, char fifo[64]);
+
 Response *initScommand(int pid, char cmd[64],char pids[64],int flag, char fifo[64]);
-Response *initStime(int pid, char cmd[64],char pids[64],int flag, char fifo[64]);
+
+Response *initStime(int pid, char pids[64],int flag, char fifo[64]);
+
+Response *initSuniq(int pid,char pids[64],int flag, char fifo[64]);
+
 Response *finishRes(int pid, char cmd[64], struct timeval end, int flag);
+
 unsigned long getTime(struct timeval start,struct timeval end);
+
 void responseFile(Response *response,char *path);
+
 int directory_exists(const char* path);
-//char* concat_args(pid_t pid, const char* cmd, struct timeval start);
+
+unsigned long count_total_time(char pids[64],char *path);
+
+int count_execs(char command[64], char pids[64], char *path);
+
+void uniqC(char pids[64], char *path, char output[BUFSIZ]);
