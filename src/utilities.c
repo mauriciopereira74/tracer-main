@@ -63,6 +63,17 @@ Response *initStatus(int pid, char cmd[64], struct timeval start, int flag, char
     return r;
 }
 
+Response *initStime(int pid, char cmd[64],char pids[64],int flag, char fifo[64])
+{
+    Response *r = xmalloc(sizeof(Response));
+    r->pid=pid;
+    strcpy(r->cmd,cmd);
+    strcpy(r->pids,pids);
+    r->flag=flag;
+    strcpy(r->fifo,fifo);
+    return r;
+}
+
 Response *finishRes(int pid, char cmd[64], struct timeval end, int flag)
 {
     Response *r = xmalloc(sizeof(Response));

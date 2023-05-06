@@ -7,6 +7,7 @@ typedef struct response
 {
     int pid;
     char cmd[64];
+    char pids[64];
     struct timeval start;
     struct timeval end;
     int flag;

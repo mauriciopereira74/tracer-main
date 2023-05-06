@@ -1,7 +1,13 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
+#include <fcntl.h>
+#include <errno.h>
 #include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdbool.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+
 
 #include "../includes/server.h"
 #include "../includes/queue.h"
@@ -83,3 +89,43 @@ void queue_to_string(Queue *queue, char output[BUFSIZ])
     }
 }
 
+unsigned long count_total_time(char pids[64],char *path) {
+
+    char *pid[128];
+    char *token = strtok(pids, " ");
+
+    int i=0;
+    while (token != NULL){
+        pid[i] = token;
+        i++;
+        token = strtok(NULL, " ");
+    }
+
+    unsigned long total_time = 0;
+    char filename[128];
+    int fd;
+
+    for (int j = 0; j < i; j++) {
+
+        sprintf(filename, "%s/%s.txt", path ,pid[j]);
+        fd = open(filename, O_RDONLY);
+
+         if (fd < 0)
+        {
+            printf("Failed to open %s (server).\n",filename);
+            return OPEN_ERROR;
+        }
+
+        char cmd[64];
+        unsigned long time;
+        int num_bytes_read;
+
+        while ((num_bytes_read = read(fd, cmd, sizeof(cmd))) > 0) {
+            if (sscanf(cmd, "%*s %lu", &time) == 1) {
+                total_time += time;
+            }
+        }
+
+    }
+    return total_time;
+}

@@ -29,73 +29,71 @@ int main(int argc, char *argv[])
     Exemplo de input:
     ./tracer execute -u "prog-a arg-1 (...) arg-n"
     */
-    switch(argc) {
-    // não fornecer comandos
-        case 1: 
-            print_error("Input Invalido\n");
-            return 0;
-        case 2:
-            if(strcmp(argv[1], "execute") == 0) {
-                print_error("Esqueceu de fornecer a flag e o comando que deseja executar\n");
-                return 0;
-            }
-            else if(strcmp(argv[1], "status") == 0){
-                /// pegar na informação do servidor
 
-                const char *fifoS = "tmp/fifoS";
-                mkfifo(fifoS, 0666);
+   if(argc==1){
+        print_error("Input Invalido\n");
+        return 0;
+    }
+    else if(argc==2 && strcmp(argv[1], "execute") == 0){
+        print_error("Esqueceu de fornecer a flag e o comando que deseja executar\n");
+        return 0;
+    }
+    else if(argc==2 && strcmp(argv[1], "status") == 0){
 
-                pid_t pid;
+        /// pegar na informação do servidor
 
-                if(((pid=fork())==0)){
+        const char *fifoS = "tmp/fifoS";
+        mkfifo(fifoS, 0666);
+
+        pid_t pid;
+
+        if(((pid=fork())==0)){
                     
-                    struct timeval start;
-                    gettimeofday(&start,NULL);
+            struct timeval start;
+            gettimeofday(&start,NULL);
 
-                    Response *response= initStatus(getpid(),argv[1],start,2,"tmp/fifoS");
+            Response *response= initStatus(getpid(),argv[1],start,2,fifoS);
 
-                    if (write(client_to_server, response, sizeof(struct response)) < 0)
-                    {
-                        print_error("Failed to write start to client to server fifo.\n");
-                        return WRITE_ERROR;
-                    }
-
-                    close(client_to_server);
-                    free(response);
-                    _exit(1);
-                }
-
-                int status;
-                wait(&status);
-
-                int status_message = open(fifoS, O_RDONLY | O_CREAT, 0644);
-
-                if (status_message < 0)
-                {
-                    print_error("Failed to open fifoS (client).\n");
-                    return OPEN_ERROR;
-                }
-
-                char statusM[BUFSIZ];
-
-                if(read(status_message,&statusM,1024)<0){
-                    print_error("Failed to read status to server to client fifoS.\n");
-                    return READ_ERROR;
-                }
-
-                printf("%s",statusM);
-                close(status_message);
+            if (write(client_to_server, response, sizeof(struct response)) < 0)
+            {
+                print_error("Failed to write start to client to server fifo.\n");
+                return WRITE_ERROR;
             }
-            break;
-        case 3:
-            // fornece execute mas nao fornece comando
-            if(strcmp(argv[1], "execute") == 0) {
-                print_error("Esqueceu de fornecer o comando\n");
-                return 0;
-            }
-            break;
-        default:
-            // execute de apenas um comando com ou sem argumentos
+
+            close(client_to_server);
+            free(response);
+            _exit(1);
+        }
+
+        int status;
+        wait(&status);
+
+        int status_message = open(fifoS, O_RDONLY | O_CREAT, 0644);
+
+        if (status_message < 0)
+        {
+            print_error("Failed to open fifoS (client).\n");
+            return OPEN_ERROR;
+        }
+
+        char statusM[BUFSIZ];
+
+        if(read(status_message,&statusM,1024)<0){
+            print_error("Failed to read status to server to client fifoS.\n");
+            return READ_ERROR;
+        }
+
+        printf("%s",statusM);
+        close(status_message);
+    }
+    else if(argc==3 && strcmp(argv[1], "execute") == 0 ){
+        
+        // fornece execute mas nao fornece comando
+        print_error("Esqueceu de fornecer o comando\n");
+        return 0;
+    }
+    else{
+        // execute de apenas um comando com ou sem argumentos
             if(strcmp(argv[1], "execute") == 0){
                 if(strcmp(argv[2], "-u") == 0){
 
@@ -167,7 +165,6 @@ int main(int argc, char *argv[])
 
                         printf("Running PID %d\n",getpid());
                         execlp(cmd->cmd,cmd->cmd,NULL);
-                        free(response);
                         free(cmd);
                     }
 
@@ -205,9 +202,9 @@ int main(int argc, char *argv[])
                     printf("Ended in %lu ms\n", getTime(start,end));
 
                     free(cmd);
-                    free(ender);
                     close(client_to_server);
                 }
+
                 /*
                 ./tracer execute -p "prog-a arg-1 (...) arg-n | 
                                     prog-b arg-1 (...) arg-n | prog-c arg-1 (...) arg-n"
@@ -216,11 +213,10 @@ int main(int argc, char *argv[])
                 else if(strcmp(argv[2], "-p") == 0){
                     print_error("DOING....\n");
                 }
-                break;
             }
-            else if(strcmp(argv[1],"stats-time")){
+            else if(strcmp(argv[1],"stats-time")== 0){
 
-                char pids[64] = "";
+                char pids[64];
                 
                 for(int i = 2; i < argc; i++) {
                     /* Append the pid to the string with a separator. */
@@ -229,8 +225,50 @@ int main(int argc, char *argv[])
                     strcat(pids, " ");
                     }
                 }
-                printf("HERE!!!!\n");
-                printf("%s\n",pids);
+
+                const char *fifoStime = "tmp/fifoStime";
+                mkfifo(fifoStime, 0666);
+
+                pid_t pid;
+
+                if(((pid=fork())==0)){
+                            
+                    struct timeval start;
+                    gettimeofday(&start,NULL);
+
+                    Response *statsTime = initStime(getpid(),argv[1],pids,3,fifoStime);
+
+                    if (write(client_to_server, statsTime, sizeof(struct response)) < 0)
+                    {
+                        print_error("Failed to write start to client to server fifo.\n");
+                        return WRITE_ERROR;
+                    }
+
+                    close(client_to_server);
+                    _exit(1);
+                }
+
+                int status;
+                wait(&status);
+
+                int statsTime_message = open(fifoStime, O_RDONLY | O_CREAT, 0644);
+
+                if (statsTime_message < 0)
+                {
+                    print_error("Failed to open fifoS (client).\n");
+                    return OPEN_ERROR;
+                }
+
+                char statsTimeM[BUFSIZ];
+
+                if(read(statsTime_message,&statsTimeM,1024)<0){
+                    print_error("Failed to read status to server to client fifoS.\n");
+                    return READ_ERROR;
+                }
+
+                printf("%s",statsTimeM);
+                close(statsTime_message);
+
             }
     }
 }

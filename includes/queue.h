@@ -28,3 +28,5 @@ Response *get(Queue *queue, int pid);
 void queue_to_string(Queue *queue, char output[BUFSIZ]);
 
 void debugQueue(Queue *queue);
+
+unsigned long count_total_time(char pids[64],char *path);

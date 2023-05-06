@@ -20,6 +20,7 @@ void *xmalloc(size_t size);
 void print_error(char *content);
 Response *initRes(int pid, char cmd[64], struct timeval start, int flag);
 Response *initStatus(int pid, char cmd[64], struct timeval start, int flag, char fifo[64]);
+Response *initStime(int pid, char cmd[64],char pids[64],int flag, char fifo[64]);
 Response *finishRes(int pid, char cmd[64], struct timeval end, int flag);
 unsigned long getTime(struct timeval start,struct timeval end);
 void responseFile(Response *response,char *path);

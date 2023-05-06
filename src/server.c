@@ -48,8 +48,6 @@ int main(int argc, char *argv[]){
    
         while(1){
             response = xmalloc(sizeof(Response));
-        
-            int log_fd = open("tmp/log.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
 
             int read_bytes = 0;
             read_bytes = read(server_to_client, response, sizeof(Response));
@@ -58,34 +56,7 @@ int main(int argc, char *argv[]){
                 printf("Error reading from FIFO: %s\n", strerror(errno));
                 break;
             }
-            if(strcmp(response->cmd,"status")!=0){
-
-                if(read_bytes == sizeof(Response)) { // se tem algo no cmd quer dizer que há response, logo metemos na queue.
-
-                    if(response->flag==1){  // Se é 1 então é o início de um comando
-
-                    push(queue,response); // até aqui corre tudo bem
-                    }
-                    else if(response->flag==0){ // Se é 1 então é o fim de um comando
-
-                        Response *help= malloc(sizeof(Response));
-
-                        if((help = get(queue,response->pid)) != NULL){
-
-                            response->start=help->start;
-                            free(help);
-
-                            response->final_time=getTime(response->start,response->end);
-                            responseFile(response,argv[1]);
-                            free(response);
-                        }
-                        else{
-                            printf("NO PID IN QUEUE\n");
-                        }
-                    }
-                }
-            }
-            else{ // comando status vem aqui
+            if(strcmp(response->cmd,"status")==0 && response->flag==2){ // comando status vem aqui
 
                 int status_message = open(response->fifo, O_WRONLY);
                 if (status_message < 0)
@@ -95,7 +66,7 @@ int main(int argc, char *argv[]){
                 }
                 
                 if(queue->size==0){
-                    
+
                     char statusM[BUFSIZ];
 
                     sprintf(statusM, "Queue Empty\n");
@@ -117,9 +88,58 @@ int main(int argc, char *argv[]){
                         return WRITE_ERROR;
                     }
                 }
+
+                close(status_message);
             }
-        
-            close(log_fd);
+            else if(strcmp(response->cmd,"stats-time")==0 && response->flag==3){
+
+                int statsTime_message = open(response->fifo, O_WRONLY);
+                if (statsTime_message < 0)
+                {
+                    print_error("Failed to open fifoS (client).\n");
+                    return OPEN_ERROR;
+                }
+                
+                char statsTimeM[BUFSIZ];
+                unsigned long total= count_total_time(response->pids,argv[1]);
+
+                sprintf(statsTimeM, "Total execution time is %lu ms\n",total);
+
+
+                if (write(statsTime_message, &statsTimeM, strlen(statsTimeM)) < 0)
+                {
+                    print_error("Failed to write end to client to server fifo.\n");
+                    return WRITE_ERROR;
+                } 
+                
+
+            }
+            else{
+
+                if(read_bytes == sizeof(Response)) { // se tem algo no cmd quer dizer que há response, logo metemos na queue.
+
+                    if(response->flag==1){  // Se é 1 então é o início de um comando
+                    push(queue,response); // até aqui corre tudo bem
+                    }
+                    else if(response->flag==0){ // Se é 1 então é o fim de um comando
+
+                        Response *help= malloc(sizeof(Response));
+
+                        if((help = get(queue,response->pid)) != NULL){
+
+                            response->start=help->start;
+                            free(help);
+
+                            response->final_time=getTime(response->start,response->end);
+                            responseFile(response,argv[1]);
+                            free(response);
+                        }
+                        else{
+                            printf("NO PID IN QUEUE\n");
+                        }
+                    }
+                }
+            }
         }
         close(server_to_client);
 
