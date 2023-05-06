@@ -129,3 +129,44 @@ unsigned long count_total_time(char pids[64],char *path) {
     }
     return total_time;
 }
+
+int count_execs(char command[64], char pids[64], char *path) {
+
+    char *pid[128];
+    char *token = strtok(pids, " ");
+
+    int i=0;
+    while (token != NULL){
+        pid[i] = token;
+        i++;
+        token = strtok(NULL, " ");
+    }
+
+    char filename[128];
+    int fd;
+    int count=0;
+
+    for (int j = 0; j < i; j++) {
+
+        sprintf(filename, "%s/%s.txt", path ,pid[j]);
+        fd = open(filename, O_RDONLY);
+
+         if (fd < 0)
+        {
+            printf("Failed to open %s (server).\n",filename);
+            return OPEN_ERROR;
+        }
+
+        char cmd[64];
+        char cmd2[64];
+        int num_bytes_read;
+
+        while ((num_bytes_read = read(fd, cmd, sizeof(cmd))) > 0) {
+            if (sscanf(cmd, "%s %*lu", cmd2) == 1) {
+                if(strcmp(cmd2,command)) count++;
+            }
+        }
+
+    }
+    return count;
+}

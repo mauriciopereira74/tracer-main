@@ -30,3 +30,5 @@ void queue_to_string(Queue *queue, char output[BUFSIZ]);
 void debugQueue(Queue *queue);
 
 unsigned long count_total_time(char pids[64],char *path);
+
+int count_execs(char command[64], char pids[64], char *path);

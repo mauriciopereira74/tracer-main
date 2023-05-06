@@ -56,7 +56,7 @@ int main(int argc, char *argv[]){
                 printf("Error reading from FIFO: %s\n", strerror(errno));
                 break;
             }
-            if(strcmp(response->cmd,"status")==0 && response->flag==2){ // comando status vem aqui
+            if(strcmp(response->cmd,"status")==0 && response->flag==STATUS){ // comando status vem aqui
 
                 int status_message = open(response->fifo, O_WRONLY);
                 if (status_message < 0)
@@ -91,7 +91,7 @@ int main(int argc, char *argv[]){
 
                 close(status_message);
             }
-            else if(strcmp(response->cmd,"stats-time")==0 && response->flag==3){
+            else if(strcmp(response->cmd,"stats-time")==0 && response->flag==STATSTIME){
 
                 int statsTime_message = open(response->fifo, O_WRONLY);
                 if (statsTime_message < 0)
@@ -114,14 +114,36 @@ int main(int argc, char *argv[]){
                 
 
             }
+            else if(response->flag==STATSCOMMAND){
+
+                int statsCommand_message = open(response->fifo, O_WRONLY);
+                if (statsCommand_message < 0)
+                {
+                    print_error("Failed to open fifoS (client).\n");
+                    return OPEN_ERROR;
+                }
+                
+                char statsCommandM[BUFSIZ];
+                int times=count_execs(response->cmd,response->pids,argv[1]);
+
+                sprintf(statsCommandM, "%s was executed %d times\n",response->cmd,times);
+
+
+                if (write(statsCommand_message, &statsCommandM, strlen(statsCommandM)) < 0)
+                {
+                    print_error("Failed to write end to client to server fifo.\n");
+                    return WRITE_ERROR;
+                } 
+                
+            }
             else{
 
                 if(read_bytes == sizeof(Response)) { // se tem algo no cmd quer dizer que há response, logo metemos na queue.
 
-                    if(response->flag==1){  // Se é 1 então é o início de um comando
+                    if(response->flag==STARTER){  // Se é 1 então é o início de um comando
                     push(queue,response); // até aqui corre tudo bem
                     }
-                    else if(response->flag==0){ // Se é 1 então é o fim de um comando
+                    else if(response->flag==ENDER){ // Se é 1 então é o fim de um comando
 
                         Response *help= malloc(sizeof(Response));
 

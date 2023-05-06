@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
             struct timeval start;
             gettimeofday(&start,NULL);
 
-            Response *response= initStatus(getpid(),argv[1],start,2,fifoS);
+            Response *response= initStatus(getpid(),argv[1],start,STATUS,fifoS);
 
             if (write(client_to_server, response, sizeof(struct response)) < 0)
             {
@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
 
                         write(pipe_fd[1],&start,sizeof(struct timeval));
 
-                        Response *response= initRes(getpid(),cmd->cmd,start,1);
+                        Response *response= initRes(getpid(),cmd->cmd,start,STARTER);
 
 
                         if (write(client_to_server, response, sizeof(struct response)) < 0)
@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
 
                         write(pipe_fd[1],&start,sizeof(struct timeval));
 
-                        Response *response= initRes(getpid(),cmd->cmd,start,1);
+                        Response *response= initRes(getpid(),cmd->cmd,start,STARTER);
 
                         if (write(client_to_server, response, sizeof(struct response)) < 0)
                         {
@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
                     int status;
                     wait(&status);
                     gettimeofday(&end, NULL);
-                    Response *ender = finishRes(pid,cmd->cmd,end,0);
+                    Response *ender = finishRes(pid,cmd->cmd,end,ENDER);
 
                     if (write(client_to_server, ender, sizeof(struct response)) < 0)
                     {
@@ -236,7 +236,7 @@ int main(int argc, char *argv[])
                     struct timeval start;
                     gettimeofday(&start,NULL);
 
-                    Response *statsTime = initStime(getpid(),argv[1],pids,3,fifoStime);
+                    Response *statsTime = initStime(getpid(),argv[1],pids,STATSTIME,fifoStime);
 
                     if (write(client_to_server, statsTime, sizeof(struct response)) < 0)
                     {
@@ -268,6 +268,62 @@ int main(int argc, char *argv[])
 
                 printf("%s",statsTimeM);
                 close(statsTime_message);
+
+            }
+            else if(strcmp(argv[1],"stats-command")== 0){
+                
+                char pids[64];
+                
+                for(int i = 3; i < argc; i++) {
+                    /* Append the pid to the string with a separator. */
+                    strcat(pids, argv[i]);
+                    if(i < argc - 1) {
+                    strcat(pids, " ");
+                    }
+                }
+
+                const char *fifoScommand = "tmp/fifoScommand";
+                mkfifo(fifoScommand, 0666);
+
+                pid_t pid;
+
+                if(((pid=fork())==0)){
+                            
+                    struct timeval start;
+                    gettimeofday(&start,NULL);
+
+                    Response *statsTime = initScommand(getpid(),argv[2],pids,STATSCOMMAND,fifoScommand);
+
+                    if (write(client_to_server, statsTime, sizeof(struct response)) < 0)
+                    {
+                        print_error("Failed to write start to client to server fifo.\n");
+                        return WRITE_ERROR;
+                    }
+
+                    close(client_to_server);
+                    _exit(1);
+                }
+
+                int status;
+                wait(&status);
+
+                int statsCommand_message = open(fifoScommand, O_RDONLY | O_CREAT, 0644);
+
+                if (statsCommand_message < 0)
+                {
+                    print_error("Failed to open fifoS (client).\n");
+                    return OPEN_ERROR;
+                }
+
+                char statsCommandM[BUFSIZ];
+
+                if(read(statsCommand_message,&statsCommandM,1024)<0){
+                    print_error("Failed to read status to server to client fifoS.\n");
+                    return READ_ERROR;
+                }
+
+                printf("%s",statsCommandM);
+                close(statsCommand_message);
 
             }
     }
