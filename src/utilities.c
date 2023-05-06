@@ -63,7 +63,6 @@ Response *initStatus(int pid, char cmd[64], struct timeval start, int flag, char
     return r;
 }
 
-
 Response *finishRes(int pid, char cmd[64], struct timeval end, int flag)
 {
     Response *r = xmalloc(sizeof(Response));

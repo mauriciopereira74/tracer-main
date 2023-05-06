@@ -93,15 +93,30 @@ int main(int argc, char *argv[]){
                     print_error("Failed to open fifoS (client).\n");
                     return OPEN_ERROR;
                 }
+                
+                if(queue->size==0){
+                    
+                    char statusM[BUFSIZ];
 
-                char statusM[BUFSIZ]; 
-                queue_to_string(queue,statusM);
+                    sprintf(statusM, "Queue Empty\n");
 
-                if (write(status_message, &statusM, strlen(statusM)) < 0)
-                {
-                    print_error("Failed to write end to client to server fifo.\n");
-                    return WRITE_ERROR;
-                } 
+                    if (write(status_message, &statusM, strlen(statusM)) < 0)
+                    {
+                        print_error("Failed to write end to client to server fifo.\n");
+                        return WRITE_ERROR;
+                    }
+                }
+                else{
+
+                    char statusM[BUFSIZ]; 
+                    queue_to_string(queue,statusM);
+
+                    if (write(status_message, &statusM, strlen(statusM)) < 0)
+                    {
+                        print_error("Failed to write end to client to server fifo.\n");
+                        return WRITE_ERROR;
+                    }
+                }
             }
         
             close(log_fd);

@@ -29,7 +29,6 @@ int main(int argc, char *argv[])
     Exemplo de input:
     ./tracer execute -u "prog-a arg-1 (...) arg-n"
     */
-
     switch(argc) {
     // não fornecer comandos
         case 1: 
@@ -86,10 +85,6 @@ int main(int argc, char *argv[])
 
                 printf("%s",statusM);
                 close(status_message);
-            }
-            else if(strcmp(argv[1], "exit") == 0){
-                print_error("EXIT....\n");
-                return 0;
             }
             break;
         case 3:
@@ -154,6 +149,7 @@ int main(int argc, char *argv[])
                         printf("Running PID %d\n",getpid());
                         execvp(cmd->cmd,cmd->args);
                         free(args);
+                        free(cmd);
 
                     }
                     else{
@@ -172,6 +168,7 @@ int main(int argc, char *argv[])
                         printf("Running PID %d\n",getpid());
                         execlp(cmd->cmd,cmd->cmd,NULL);
                         free(response);
+                        free(cmd);
                     }
 
 
@@ -220,6 +217,20 @@ int main(int argc, char *argv[])
                     print_error("DOING....\n");
                 }
                 break;
+            }
+            else if(strcmp(argv[1],"stats-time")){
+
+                char pids[64] = "";
+                
+                for(int i = 2; i < argc; i++) {
+                    /* Append the pid to the string with a separator. */
+                    strcat(pids, argv[i]);
+                    if(i < argc - 1) {
+                    strcat(pids, " ");
+                    }
+                }
+                printf("HERE!!!!\n");
+                printf("%s\n",pids);
             }
     }
 }
