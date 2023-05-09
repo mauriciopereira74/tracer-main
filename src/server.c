@@ -153,7 +153,7 @@ int main(int argc, char *argv[]){
                     print_error("Failed to write end to client to server fifo.\n");
                     return WRITE_ERROR;
                 }
-
+                
             }
             else{
 

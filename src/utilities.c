@@ -227,18 +227,18 @@ int count_execs(char command[64], char pids[64], char *path) {
     return count;
 }
 
-void remove_duplicates(char *cmds[128], int size) {
+void remove_duplicates(char *pids[], int num_pids) {
     int i, j, k;
-    for (i = 0; i < size; ++i) {
-        for (j = i + 1; j < size;) {
-            if (strcmp(cmds[i], cmds[j]) == 0) {
-                // Remove the duplicate
-                for (k = j; k < size - 1; ++k) {
-                    cmds[k] = cmds[k+1];
+    
+    for (i = 0; i < num_pids; i++) {
+        for (j = i + 1; j < num_pids; j++) {
+            if (strcmp(pids[i], pids[j]) == 0) {
+                // Shift all elements after j to the left by 1
+                for (k = j; k < num_pids - 1; k++) {
+                    pids[k] = pids[k + 1];
                 }
-                --size;
-            } else {
-                ++j;
+                num_pids--; // Reduce the length of the array
+                j--; // Check the same index again
             }
         }
     }
@@ -247,6 +247,7 @@ void remove_duplicates(char *cmds[128], int size) {
 void uniqC(char pids[64], char *path, char output[BUFSIZ]){
 
     char *pid[128];
+    char *aux[128];
     char *token = strtok(pids, " ");
 
     int i=0;
@@ -273,7 +274,6 @@ void uniqC(char pids[64], char *path, char output[BUFSIZ]){
         char cmd2[64];
         int num_bytes_read;
 
-        char *aux[128];
         int k=0;
 
 
@@ -290,8 +290,6 @@ void uniqC(char pids[64], char *path, char output[BUFSIZ]){
             sprintf(temp, "%s\n",aux[l]);
             strcat(output, temp);
         }
-
     }
-
 }
 
