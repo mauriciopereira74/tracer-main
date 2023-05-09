@@ -52,7 +52,7 @@ Response *initRes(int pid, char cmd[64], struct timeval start, int flag)
     return r;
 }
 
-Response *initStatus(int pid, char cmd[64], struct timeval start, int flag, char fifo[64])
+Response *initStatus(int pid, char cmd[64], struct timeval start, int flag, const char fifo[64])
 {
     Response *r = xmalloc(sizeof(Response));
     r->pid=pid;
@@ -63,7 +63,7 @@ Response *initStatus(int pid, char cmd[64], struct timeval start, int flag, char
     return r;
 }
 
-Response *initStime(int pid, char pids[64],int flag, char fifo[64])
+Response *initStime(int pid, char pids[64],int flag, const char fifo[64])
 {
     Response *r = xmalloc(sizeof(Response));
     r->pid=pid;
@@ -73,7 +73,7 @@ Response *initStime(int pid, char pids[64],int flag, char fifo[64])
     return r;
 }
 
-Response *initScommand(int pid, char cmd[64],char pids[64],int flag, char fifo[64])
+Response *initScommand(int pid, char cmd[64],char pids[64],int flag, const char fifo[64])
 {
     Response *r = xmalloc(sizeof(Response));
     r->pid=pid;
@@ -84,7 +84,7 @@ Response *initScommand(int pid, char cmd[64],char pids[64],int flag, char fifo[6
     return r;
 }
 
-Response *initSuniq(int pid,char pids[64],int flag, char fifo[64])
+Response *initSuniq(int pid,char pids[64],int flag, const char fifo[64])
 {
     Response *r = xmalloc(sizeof(Response));
     r->pid=pid;
@@ -166,6 +166,7 @@ unsigned long count_total_time(char pids[64],char *path) {
 
          if (fd < 0)
         {
+            printf("%s\n",pid[j]);
             printf("Failed to open %s (server).\n",filename);
             return OPEN_ERROR;
         }
@@ -207,6 +208,7 @@ int count_execs(char command[64], char pids[64], char *path) {
 
          if (fd < 0)
         {
+            printf("%s\n",pid[j]);
             printf("Failed to open %s (server).\n",filename);
             return OPEN_ERROR;
         }

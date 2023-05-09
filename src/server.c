@@ -102,6 +102,7 @@ int main(int argc, char *argv[]){
                 
                 char statsTimeM[BUFSIZ];
                 unsigned long total= count_total_time(response->pids,argv[1]);
+                printf("%s\n",response->pids);
 
                 sprintf(statsTimeM, "Total execution time is %lu ms\n",total);
 

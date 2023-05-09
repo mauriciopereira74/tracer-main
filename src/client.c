@@ -41,8 +41,9 @@ int main(int argc, char *argv[])
     else if(argc==2 && strcmp(argv[1], "status") == 0){
 
         /// pegar na informação do servidor
-
-        const char *fifoS = "tmp/fifoS";
+        char fifoAux[20];
+        sprintf(fifoAux, "tmp/fifoS_%d", getpid());
+        const char *fifoS = fifoAux;
         mkfifo(fifoS, 0666);
 
         pid_t pid;
@@ -226,7 +227,9 @@ int main(int argc, char *argv[])
                     }
                 }
 
-                const char *fifoStime = "tmp/fifoStime";
+                char fifoAux[20];
+                sprintf(fifoAux, "tmp/fifoS_%d", getpid());
+                const char *fifoStime = fifoAux;
                 mkfifo(fifoStime, 0666);
 
                 pid_t pid;
@@ -279,7 +282,9 @@ int main(int argc, char *argv[])
                     }
                 }
 
-                const char *fifoScommand = "tmp/fifoScommand";
+                char fifoAux[20];
+                sprintf(fifoAux, "tmp/fifoS_%d", getpid());
+                const char *fifoScommand = fifoAux;
                 mkfifo(fifoScommand, 0666);
 
                 pid_t pid;
@@ -331,8 +336,9 @@ int main(int argc, char *argv[])
                     strcat(pids, " ");
                     }
                 }
-
-                const char *fifoSuniq = "tmp/fifoSuniq";
+                char fifoAux[20];
+                sprintf(fifoAux, "tmp/fifoS_%d", getpid());
+                const char *fifoSuniq = fifoAux;
                 mkfifo(fifoSuniq, 0666);
 
                 pid_t pid;
