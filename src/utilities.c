@@ -217,7 +217,7 @@ int count_execs(char command[64], char pids[64], char *path) {
 
         while ((num_bytes_read = read(fd, cmd, sizeof(cmd))) > 0) {
             if (sscanf(cmd, "%s %*lu", cmd2) == 1) {
-                if(strcmp(cmd2,command)) count++;
+                if(strcmp(cmd2,command)==0) count++;
             }
         }
 
