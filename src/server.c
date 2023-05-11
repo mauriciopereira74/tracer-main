@@ -111,7 +111,7 @@ int main(int argc, char *argv[]){
                     print_error("Failed to write end to client to server fifo.\n");
                     return WRITE_ERROR;
                 } 
-                
+                close(statsTime_message);
 
             }
             else if(response->flag==STATSCOMMAND){
@@ -133,7 +133,8 @@ int main(int argc, char *argv[]){
                 {
                     print_error("Failed to write end to client to server fifo.\n");
                     return WRITE_ERROR;
-                } 
+                }
+                close(statsCommand_message);
                 
             }
             else if(response->flag==STATSUNIQ) {
@@ -146,14 +147,17 @@ int main(int argc, char *argv[]){
                 }
                 
                 char statsUniqM[BUFSIZ];
-                uniqC(response->pids,argv[1],statsUniqM);
+                char *temp=uniqC(response->pids,argv[1]);
+
+                sprintf(statsUniqM, "%s\n",temp);
 
                 if (write(statsUniq_message, &statsUniqM, strlen(statsUniqM)) < 0)
                 {
                     print_error("Failed to write end to client to server fifo.\n");
                     return WRITE_ERROR;
                 }
-                
+                free(temp);
+                close(statsUniq_message);
             }
             else{
 
@@ -183,7 +187,7 @@ int main(int argc, char *argv[]){
             }
         }
         close(server_to_client);
-
+        free(queue);
     }
 }
 

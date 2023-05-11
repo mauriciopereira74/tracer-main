@@ -135,7 +135,6 @@ int directory_exists(const char* path)
 {
   struct stat sb;
   if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)) {
-    /* Directory exists. */
     return 1;
   } else {
     /* Directory does not exist. */
@@ -176,9 +175,10 @@ unsigned long count_total_time(char pids[64],char *path) {
         int num_bytes_read;
 
         while ((num_bytes_read = read(fd, cmd, sizeof(cmd))) > 0) {
-            if (sscanf(cmd, "%*s %lu", &time) == 1) {
-                total_time += time;
-            }
+            char *token = strtok(cmd, " ");
+            token = strtok(NULL, " ");
+            time = strtoul(token, NULL, 10); // Converte o número para unsigned long
+            total_time += time; 
         }
 
     }
@@ -214,37 +214,38 @@ int count_execs(char command[64], char pids[64], char *path) {
         }
 
         char cmd[64];
-        char cmd2[64];
         int num_bytes_read;
 
         while ((num_bytes_read = read(fd, cmd, sizeof(cmd))) > 0) {
-            if (sscanf(cmd, "%s %*lu", cmd2) == 1) {
-                if(strcmp(cmd2,command)==0) count++;
-            }
+            char *token = strtok(cmd, " ");
+            if(strcmp(token,command)==0) count++;
         }
 
     }
     return count;
 }
 
-void remove_duplicates(char *pids[], int num_pids) {
+void remove_dup(char* aux[], int tamanho) {
     int i, j, k;
-    
-    for (i = 0; i < num_pids; i++) {
-        for (j = i + 1; j < num_pids; j++) {
-            if (strcmp(pids[i], pids[j]) == 0) {
-                // Shift all elements after j to the left by 1
-                for (k = j; k < num_pids - 1; k++) {
-                    pids[k] = pids[k + 1];
+
+    // Percorre o array aux comparando cada elemento com os elementos posteriores
+    for (i = 0; i < tamanho - 1; i++) {
+        for (j = i + 1; j < tamanho; j++) {
+            // Se encontrar um elemento duplicado, remove-o do array
+            if (strcmp(aux[i], aux[j]) == 0) {
+                // Desloca todos os elementos posteriores uma posição para trás
+                for (k = j; k < tamanho - 1; k++) {
+                    aux[k] = aux[k + 1];
                 }
-                num_pids--; // Reduce the length of the array
-                j--; // Check the same index again
+                tamanho--; // Atualiza o tamanho do array
+                j--; // Volta uma posição para continuar a comparação corretamente
             }
         }
     }
 }
 
-void uniqC(char pids[64], char *path, char output[BUFSIZ]){
+
+char* uniqC(char pids[64], char *path){
 
     char *pid[128];
     char *aux[128];
@@ -260,36 +261,38 @@ void uniqC(char pids[64], char *path, char output[BUFSIZ]){
     char filename[128];
     int fd;
 
+    char* result = malloc(BUFSIZ * sizeof(char));
+    result[0] = '\0';
+
     for (int j = 0; j < i; j++) {
 
         sprintf(filename, "%s/%s.txt", path ,pid[j]);
         fd = open(filename, O_RDONLY);
 
-         if (fd < 0)
+        if (fd < 0)
         {
             printf("Failed to open %s (server).\n",filename);
         }
 
         char cmd[64];
-        char cmd2[64];
         int num_bytes_read;
-
         int k=0;
 
-
         while ((num_bytes_read = read(fd, cmd, sizeof(cmd))) > 0) {
-            if (sscanf(cmd, "%s %*lu", cmd2) == 1) {
-                aux[k++]=cmd2;
-            }
+            char *token = strtok(cmd, " ");
+            aux[k++]=token;
         }
 
-        remove_duplicates(aux,k);
+        remove_dup(aux,k);
         char temp[1024];
-
+        
         for (int l = 0; l < k; l++) {
-            sprintf(temp, "%s\n",aux[l]);
-            strcat(output, temp);
+            sprintf(temp, "%s\n", aux[l]);
+            strcat(result, temp);
         }
     }
+
+
+    return result;
 }
 

@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
             return READ_ERROR;
         }
 
-        printf("%s",statusM);
+        write(1, statusM, strlen(statusM));
         close(status_message);
     }
     else if(argc==3 && strcmp(argv[1], "execute") == 0 ){
@@ -145,7 +145,12 @@ int main(int argc, char *argv[])
                             return WRITE_ERROR;
                         }
 
-                        printf("Running PID %d\n",getpid());
+                        char buffer[100];
+                        int pid = getpid();
+
+                        sprintf(buffer, "Running PID %d\n", pid);
+                        write(1, buffer, strlen(buffer));
+
                         execvp(cmd->cmd,cmd->args);
                         free(args);
                         free(cmd);
@@ -164,7 +169,12 @@ int main(int argc, char *argv[])
                             return WRITE_ERROR;
                         }
 
-                        printf("Running PID %d\n",getpid());
+                        char buffer[100];
+                        int pid = getpid();
+
+                        sprintf(buffer, "Running PID %d\n", pid);
+                        write(1, buffer, strlen(buffer));
+
                         execlp(cmd->cmd,cmd->cmd,NULL);
                         free(cmd);
                     }
@@ -200,7 +210,11 @@ int main(int argc, char *argv[])
                     close(pipe_fd[1]);
                     read(pipe_fd[0],&start,sizeof(int));
 
-                    printf("Ended in %lu ms\n", getTime(start,end));
+                    char buffer[100];
+
+                    unsigned long time = getTime(start, end);
+                    sprintf(buffer, "Ended in %lu ms\n", time);
+                    write(1, buffer, strlen(buffer));
 
                     free(cmd);
                     close(client_to_server);
@@ -266,7 +280,7 @@ int main(int argc, char *argv[])
                     return READ_ERROR;
                 }
 
-                printf("%s",statsTimeM);
+                write(1, statsTimeM, strlen(statsTimeM));
                 close(statsTime_message);
 
             }
@@ -321,7 +335,7 @@ int main(int argc, char *argv[])
                     return READ_ERROR;
                 }
 
-                printf("%s",statsCommandM);
+                write(1, statsCommandM, strlen(statsCommandM));
                 close(statsCommand_message);
 
             }
@@ -375,7 +389,7 @@ int main(int argc, char *argv[])
                     return READ_ERROR;
                 }
 
-                printf("%s",statsUniqM);
+                write(1, statsUniqM, strlen(statsUniqM));
                 close(statsUniq_message);
                 
             }
