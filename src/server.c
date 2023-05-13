@@ -172,7 +172,7 @@ int main(int argc, char *argv[]){
                     send_help_message(help_message);
                     close(help_message);
                 }
-                else{
+                else if (response->flag==STARTER || response->flag==ENDER){
 
                     if(response->flag==STARTER){  // Se é 1 então é o início de um comando
                     push(queue,response); // até aqui corre tudo bem
