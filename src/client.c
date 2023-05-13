@@ -131,7 +131,6 @@ int main(int argc, char *argv[])
 
                     if(((pid=fork())==0)){
 
-                    if(cmd->args_size>0){
                         gettimeofday(&start, NULL);
 
                         write(pipe_fd[1],&start,sizeof(struct timeval));
@@ -151,37 +150,16 @@ int main(int argc, char *argv[])
                         sprintf(buffer, "Running PID %d\n", pid);
                         write(1, buffer, strlen(buffer));
 
+                        if(cmd->args_size>0)
                         execvp(cmd->cmd,cmd->args);
+                        else 
+                        execlp(cmd->cmd,cmd->cmd,NULL);
+
                         free(args);
                         free(cmd);
 
-                    }
-                    else{
-                        gettimeofday(&start, NULL);
-
-                        write(pipe_fd[1],&start,sizeof(struct timeval));
-
-                        Response *response= initRes(getpid(),cmd->cmd,start,STARTER);
-
-                        if (write(client_to_server, response, sizeof(struct response)) < 0)
-                        {
-                            print_error("Failed to write start to client to server fifo.\n");
-                            return WRITE_ERROR;
-                        }
-
-                        char buffer[100];
-                        int pid = getpid();
-
-                        sprintf(buffer, "Running PID %d\n", pid);
-                        write(1, buffer, strlen(buffer));
-
-                        execlp(cmd->cmd,cmd->cmd,NULL);
-                        free(cmd);
-                    }
-
-
-                    perror("exec error");
-                    _exit(1);   
+                        perror("exec error");
+                        _exit(1);   
                         
                     }
                     // wait for child process to finish

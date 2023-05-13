@@ -225,21 +225,20 @@ int count_execs(char command[64], char pids[64], char *path) {
     return count;
 }
 
-void remove_dup(char* aux[], int tamanho) {
-    int i, j, k;
-
-    // Percorre o array aux comparando cada elemento com os elementos posteriores
-    for (i = 0; i < tamanho - 1; i++) {
-        for (j = i + 1; j < tamanho; j++) {
-            // Se encontrar um elemento duplicado, remove-o do array
-            if (strcmp(aux[i], aux[j]) == 0) {
-                // Desloca todos os elementos posteriores uma posição para trás
-                for (k = j; k < tamanho - 1; k++) {
-                    aux[k] = aux[k + 1];
-                }
-                tamanho--; // Atualiza o tamanho do array
-                j--; // Volta uma posição para continuar a comparação corretamente
+void remove_dup(char** aux, int size) {
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = i + 1; j < size; j++) {
+            if (aux[i] != NULL && aux[j] != NULL && strcmp(aux[i], aux[j]) == 0) {
+                free(aux[j]);
+                aux[j] = NULL;
             }
+        }
+    }
+
+    int k = 0;
+    for (int i = 0; i < size; i++) {
+        if (aux[i] != NULL) {
+            aux[k++] = aux[i];
         }
     }
 }
@@ -260,6 +259,7 @@ char* uniqC(char pids[64], char *path){
 
     char filename[128];
     int fd;
+    int k=0;
 
     char* result = malloc(BUFSIZ * sizeof(char));
     result[0] = '\0';
@@ -276,23 +276,21 @@ char* uniqC(char pids[64], char *path){
 
         char cmd[64];
         int num_bytes_read;
-        int k=0;
 
         while ((num_bytes_read = read(fd, cmd, sizeof(cmd))) > 0) {
             char *token = strtok(cmd, " ");
-            aux[k++]=token;
+            aux[k++]=strdup(token);
         }
-
         remove_dup(aux,k);
+    }
         char temp[1024];
         
         for (int l = 0; l < k; l++) {
-            sprintf(temp, "%s\n", aux[l]);
-            strcat(result, temp);
+            if(aux[l]!=NULL){
+                sprintf(temp, "%s\n", aux[l]);
+                strcat(result, temp);
+            }
         }
-    }
-
-
     return result;
 }
 
