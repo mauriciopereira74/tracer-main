@@ -7,6 +7,7 @@
 #define STATSTIME 3
 #define STATSCOMMAND 4
 #define STATSUNIQ 5
+#define HELP 6
 
 #include "../includes/commands.h"
 #include <sys/time.h>

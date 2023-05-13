@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     }
     else if(argc==2 && strcmp(argv[1], "status") == 0){
 
-        /// pegar na informação do servidor
+        // criar fifo único
         char fifoAux[20];
         sprintf(fifoAux, "tmp/fifoS_%d", getpid());
         const char *fifoS = fifoAux;
@@ -86,6 +86,54 @@ int main(int argc, char *argv[])
 
         write(1, statusM, strlen(statusM));
         close(status_message);
+    }
+    else if(argc==2 && strcmp(argv[1], "help") == 0){
+
+        // criar fifo único
+        char fifoAux[20];
+        sprintf(fifoAux, "tmp/fifoH_%d", getpid());
+        const char *fifoH = fifoAux;
+        mkfifo(fifoH, 0666);
+
+        pid_t pid;
+
+        if(((pid=fork())==0)){
+                    
+
+            Response *response= initHelp(getpid(),HELP,fifoH);
+
+            if (write(client_to_server, response, sizeof(struct response)) < 0)
+            {
+                print_error("Failed to write start to client to server fifo.\n");
+                return WRITE_ERROR;
+            }
+
+            close(client_to_server);
+            free(response);
+            _exit(1);
+        }
+
+        int status;
+        wait(&status);
+
+        int help_message = open(fifoH, O_RDONLY | O_CREAT, 0644);
+
+        if (help_message < 0)
+        {
+            print_error("Failed to open fifoS (client).\n");
+            return OPEN_ERROR;
+        }
+
+        char helpM[BUFSIZ];
+
+        if(read(help_message,&helpM,1024)<0){
+            print_error("Failed to read status to server to client fifoS.\n");
+            return READ_ERROR;
+        }
+
+        write(1, helpM, strlen(helpM));
+        close(help_message);
+
     }
     else if(argc==3 && strcmp(argv[1], "execute") == 0 ){
         
@@ -267,7 +315,6 @@ int main(int argc, char *argv[])
                 char pids[64];
                 
                 for(int i = 3; i < argc; i++) {
-                    /* Append the pid to the string with a separator. */
                     strcat(pids, argv[i]);
                     if(i < argc - 1) {
                     strcat(pids, " ");

@@ -160,6 +160,18 @@ int main(int argc, char *argv[]){
                     free(temp);
                     close(statsUniq_message);
                 }
+                else if(response->flag==HELP) {
+
+                    int help_message = open(response->fifo, O_WRONLY);
+                    if (help_message < 0)
+                    {
+                        print_error("Failed to open fifoS (client).\n");
+                        return OPEN_ERROR;
+                    }  
+                    
+                    send_help_message(help_message);
+                    close(help_message);
+                }
                 else{
 
                     if(response->flag==STARTER){  // Se é 1 então é o início de um comando

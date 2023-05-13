@@ -94,6 +94,15 @@ Response *initSuniq(int pid,char pids[64],int flag, const char fifo[64])
     return r;
 }
 
+Response *initHelp(int pid,int flag, const char fifo[64])
+{
+    Response *r = xmalloc(sizeof(Response));
+    r->pid=pid;
+    r->flag=flag;
+    strcpy(r->fifo,fifo);
+    return r;
+}
+
 Response *finishRes(int pid, char cmd[64], struct timeval end, int flag)
 {
     Response *r = xmalloc(sizeof(Response));
@@ -177,7 +186,7 @@ unsigned long count_total_time(char pids[64],char *path) {
         while ((num_bytes_read = read(fd, cmd, sizeof(cmd))) > 0) {
             char *token = strtok(cmd, " ");
             token = strtok(NULL, " ");
-            time = strtoul(token, NULL, 10); // Converte o número para unsigned long
+            time = strtoul(token, NULL, 10);
             total_time += time; 
         }
 
@@ -225,20 +234,12 @@ int count_execs(char command[64], char pids[64], char *path) {
     return count;
 }
 
-void remove_dup(char** aux, int size) {
+void remove_dup(char* aux[128], int size) {
     for (int i = 0; i < size - 1; i++) {
         for (int j = i + 1; j < size; j++) {
             if (aux[i] != NULL && aux[j] != NULL && strcmp(aux[i], aux[j]) == 0) {
-                free(aux[j]);
                 aux[j] = NULL;
             }
-        }
-    }
-
-    int k = 0;
-    for (int i = 0; i < size; i++) {
-        if (aux[i] != NULL) {
-            aux[k++] = aux[i];
         }
     }
 }
@@ -281,8 +282,8 @@ char* uniqC(char pids[64], char *path){
             char *token = strtok(cmd, " ");
             aux[k++]=strdup(token);
         }
-        remove_dup(aux,k);
     }
+        remove_dup(aux,k);
         char temp[1024];
         
         for (int l = 0; l < k; l++) {
@@ -292,5 +293,24 @@ char* uniqC(char pids[64], char *path){
             }
         }
     return result;
+}
+
+void send_help_message(int server_to_client)
+{
+    char *help_menu = "usage: ./tracer [option] commands(or pids) arguments(or not)\n"
+                      "Submit jobs to be executed.\n"
+                      "Options:\n"
+                      "execute -u    : submit a job to execute command, requires command name and arguments(./tracer execute -u ...)\n"
+                      "status        : display a status message containing the status of the server (./tracer status)\n"
+                      "help          : display this message (./tracer help)\n"
+                      "stats-time    : give the total execution time of the jobs you want(./tracer stats-time [pids])\n"
+                      "stats-command : give the total execution times of command in the jobs you want(./tracer stats-command cmd [pids])\n"
+                      "stats-uniq    : give the commands that the jobs execute(./tracer stats-uniq [pids])\n";
+
+    if (write(server_to_client, help_menu, strlen(help_menu) + 1) < 0)
+    {
+        print_error("Could not write into FIFO. <stc> in server.c\n");
+        _exit(WRITE_ERROR);
+    }
 }
 
