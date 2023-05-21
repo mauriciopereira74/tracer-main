@@ -34,7 +34,7 @@ int main(int argc, char *argv[]){
         /* Opening communication with the client. */
         const char *fifo = "tmp/fifo";
         mkfifo(fifo, 0666);
-        int client_to_server = open(fifo, O_RDONLY | O_CREAT, 0644);
+        int client_to_server = open(fifo, O_RDONLY);
         if (client_to_server < 0) /* Opening fifo */
         {
             print_error("Failed to open FIFO (server)\n");

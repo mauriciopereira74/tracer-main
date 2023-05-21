@@ -62,17 +62,17 @@ $(BIN_DIR)/%.o: $(SRC_DIR)/%.c
 c:
 	-rm -rf obj/* $(NAME_C)
 	-rm tracer
-	-rm tmp/*
+	-rm -r tmp
 
 .PHONY: cs
 cs:
 	-rm -rf obj/* $(NAME_S)
 	-rm monitor
-	-rm tmp/*
+	-rm -r tmp
 
 .PHONY: call
 call:
 	-rm -rf obj/* $(NAME_C) $(NAME_S)
 	-rm tracer
 	-rm monitor
-	-rm tmp/*
+	-rm -r tmp
